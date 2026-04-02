@@ -6,8 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "install:all": "npm --prefix .. run install:all"
+    "vercel-build": "next build",
+    "lint": "eslint"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.0",
