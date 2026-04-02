@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { issueToken } from '@/lib/server/auth';
-import { supabaseAdmin } from '@/lib/server/supabase';
+import { getSupabaseAdmin } from '@/lib/server/supabase';
 
 const registerSchema = z.object({
   full_name: z.string().min(2, 'Full name required'),
@@ -15,6 +15,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
     const body = registerSchema.parse(await request.json());
 
     const { data: existing, error: existingError } = await supabaseAdmin

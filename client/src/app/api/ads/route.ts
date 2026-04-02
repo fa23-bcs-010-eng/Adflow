@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/server/supabase';
+import { getSupabaseAdmin } from '@/lib/server/supabase';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  const supabaseAdmin = getSupabaseAdmin();
   const category = request.nextUrl.searchParams.get('category');
   const city = request.nextUrl.searchParams.get('city');
   const search = request.nextUrl.searchParams.get('search');
