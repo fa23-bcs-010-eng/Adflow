@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "install:all": "npm --prefix .. run install:all",
-    "vercel-build": "next build",
+    "vercel-build": "node scripts/vercel-build.cjs",
     "lint": "eslint"
   },
   "dependencies": {
