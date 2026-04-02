@@ -1,0 +1,17 @@
+{
+  "functions": {
+    "server/api/index.js": {
+      "runtime": "nodejs18.x",
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/server/api/index.js"
+    }
+  ],
+  "buildCommand": "npm run vercel-build",
+  "installCommand": "npm run install:all",
+  "framework": "nextjs"
+}
