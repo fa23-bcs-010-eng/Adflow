@@ -343,8 +343,8 @@ Adflow Pro is optimized for deployment as a single Vercel project with Supabase 
 ### 1. Project Configuration
 - **Framework Preset**: Next.js (detected automatically)
 - **Root Directory**: `./` (keep at root)
-- **Build Command**: `npm run build`
-- **Output Directory**: `.next`
+- **Build Command**: `npm run vercel-build`
+- **Output Directory**: `client/.next`
 - **Install Command**: `npm run install:all`
 
 ### 2. Environment Variables
