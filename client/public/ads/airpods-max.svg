@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <rect width="1200" height="800" fill="#0b1324"/>
+  <path d="M410 360 C410 220 790 220 790 360" fill="none" stroke="#38bdf8" stroke-width="24"/>
+  <rect x="390" y="360" width="90" height="180" rx="45" fill="#334155"/>
+  <rect x="720" y="360" width="90" height="180" rx="45" fill="#334155"/>
+  <circle cx="435" cy="520" r="38" fill="#1e293b"/>
+  <circle cx="765" cy="520" r="38" fill="#1e293b"/>
+  <circle cx="1040" cy="180" r="140" fill="#22d3ee" opacity="0.12"/>
+  <text x="90" y="690" fill="#f8fafc" font-family="Arial, sans-serif" font-size="62" font-weight="700">AirPods Max</text>
+  <text x="90" y="750" fill="#67e8f9" font-family="Arial, sans-serif" font-size="40">Noise Canceling • Original • Box Packed</text>
+</svg>
