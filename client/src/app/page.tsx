@@ -116,6 +116,12 @@ const RECENT_FALLBACK_ADS = [
   },
 ];
 
+const PACKAGE_FALLBACKS = [
+  { id: 'pkg-basic', name: 'Basic', price: 0, description: 'Start with essential visibility for a single ad.' },
+  { id: 'pkg-standard', name: 'Standard', price: 49, description: 'Get longer visibility and stronger placement.' },
+  { id: 'pkg-premium', name: 'Premium', price: 99, description: 'Feature your listing with premium promotion slots.' },
+];
+
 export default function HomePage() {
   const [featured, setFeatured] = useState<any[]>([]);
   const [recent, setRecent] = useState<any[]>([]);
@@ -131,7 +137,11 @@ export default function HomePage() {
       setFeatured(f.data);
       setRecent(r.data);
       setPackages(p.data);
-    }).catch(console.error).finally(() => setLoading(false));
+    }).catch(() => {
+      setFeatured(FEATURED_FALLBACK_ADS);
+      setRecent(RECENT_FALLBACK_ADS);
+      setPackages(PACKAGE_FALLBACKS);
+    }).finally(() => setLoading(false));
   }, []);
 
   const displayFeatured = featured.length > 0 ? featured : FEATURED_FALLBACK_ADS;

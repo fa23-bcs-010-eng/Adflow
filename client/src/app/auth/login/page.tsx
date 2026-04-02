@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { getErrorMessage } from '@/lib/errors';
 import { Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -20,8 +21,8 @@ export default function LoginPage() {
       await login(form.email, form.password);
       toast.success('Welcome back!');
       router.push('/dashboard/client');
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Login failed');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Login failed'));
     } finally { setLoading(false); }
   };
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, XCircle, Send, LineChart, UserPlus, BadgeDollarSign, Megaphone } from 'lucide-react';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
 import { useAuth } from '@/lib/auth';
 import toast from 'react-hot-toast';
 
@@ -33,7 +34,10 @@ export default function AdminDashboard() {
         setAnalytics(a.data);
         setPayments(p.data);
       })
-      .catch(console.error)
+      .catch(() => {
+        setAnalytics(null);
+        setPayments([]);
+      })
       .finally(() => setLoading(false));
   }, [user]);
 
@@ -43,8 +47,8 @@ export default function AdminDashboard() {
       await api.patch(`/admin/payments/${paymentId}/verify`, { action });
       setPayments((prev) => prev.filter((p) => p.id !== paymentId));
       toast.success(action === 'verify' ? 'Payment verified' : 'Payment rejected');
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Action failed');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Action failed'));
     } finally {
       setActing(null);
     }
@@ -54,8 +58,8 @@ export default function AdminDashboard() {
     try {
       const { data } = await api.post(`/cron/${job}`);
       toast.success(`${job}: ${JSON.stringify(data)}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Cron failed');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Cron failed'));
     }
   };
 

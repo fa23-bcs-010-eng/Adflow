@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
 import { useAuth } from '@/lib/auth';
 import StatusBadge from '@/components/StatusBadge';
 import toast from 'react-hot-toast';
@@ -71,7 +72,10 @@ export default function ClientDashboard() {
           email: user?.email || prev.email,
         }));
       })
-      .catch(console.error)
+      .catch(() => {
+        setAds([]);
+        setNotifications([]);
+      })
       .finally(() => setLoading(false));
   }, [user]);
 
@@ -134,8 +138,8 @@ export default function ClientDashboard() {
         contact_whatsapp: '',
         media: [{ media_url: '', media_type: 'image' }],
       });
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Failed to create ad');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to create ad'));
     } finally {
       setSubmitting(false);
     }
@@ -146,8 +150,8 @@ export default function ClientDashboard() {
       await api.post(`/client/ads/${adId}/submit`);
       setAds((prev) => prev.map((a) => (a.id === adId ? { ...a, status: 'submitted' } : a)));
       toast.success('Ad submitted for review');
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Failed to submit');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to submit'));
     }
   };
 

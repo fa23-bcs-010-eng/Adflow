@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { getErrorMessage } from '@/lib/errors';
 import { Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -20,8 +21,8 @@ export default function RegisterPage() {
       await register(form);
       toast.success('Account created! Welcome to AdFlow Pro.');
       router.push(form.role === 'client' ? '/dashboard/client' : `/dashboard/${form.role === 'super_admin' ? 'admin' : form.role}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Registration failed');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Registration failed'));
     } finally { setLoading(false); }
   };
 

@@ -6,6 +6,13 @@ import Link from 'next/link';
 import api from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 
+const PACKAGE_FALLBACKS = [
+  { id: 'pkg-basic', name: 'Basic', price: 0 },
+  { id: 'pkg-standard', name: 'Standard', price: 49 },
+  { id: 'pkg-premium', name: 'Premium', price: 99 },
+  { id: 'pkg-enterprise', name: 'Enterprise', price: 299 },
+];
+
 const PACKAGE_DETAILS: Record<string, { duration: string; support: string; listings: string; features: string[] }> = {
   Basic: {
     duration: '7 days per listing',
@@ -82,7 +89,7 @@ export default function PackagesPage() {
     api
       .get('/packages')
       .then((r) => setPackages(r.data))
-      .catch(console.error)
+      .catch(() => setPackages(PACKAGE_FALLBACKS))
       .finally(() => setLoading(false));
   }, []);
 

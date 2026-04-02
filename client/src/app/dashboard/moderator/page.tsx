@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, XCircle, Eye, Clock3, LayoutGrid, Files, ShieldCheck, AlertTriangle, Flag, MessageSquare, BarChart3, Settings, Users } from 'lucide-react';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
 import { useAuth } from '@/lib/auth';
 import StatusBadge from '@/components/StatusBadge';
 import toast from 'react-hot-toast';
@@ -38,7 +39,10 @@ export default function ModeratorDashboard() {
         setQueue(r.data);
         if (r.data.length > 0) setSelected(r.data[0]);
       })
-      .catch(console.error)
+      .catch(() => {
+        setQueue([]);
+        setSelected(null);
+      })
       .finally(() => setLoading(false));
   }, [user]);
 
@@ -52,8 +56,8 @@ export default function ModeratorDashboard() {
       setSelected(next[0] || null);
       setNote('');
       toast.success(action === 'approve' ? 'Ad approved' : 'Ad rejected and returned');
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Action failed');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Action failed'));
     } finally {
       setActing(false);
     }

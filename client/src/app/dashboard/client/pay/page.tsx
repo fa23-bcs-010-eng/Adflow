@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
 import toast from 'react-hot-toast';
 import { CreditCard, Landmark, Smartphone, Shield, CheckCircle, Lock, Upload } from 'lucide-react';
 
@@ -39,7 +40,10 @@ function PayPageInner() {
         setPackages(res.data);
         if (res.data.length > 0) setSelectedPackage(res.data[0]);
       })
-      .catch(console.error)
+      .catch(() => {
+        toast.error('Packages are unavailable right now');
+        setPackages([]);
+      })
       .finally(() => setLoading(false));
   }, [adId, router]);
 
@@ -84,8 +88,8 @@ function PayPageInner() {
       await api.post('/client/payments', payload);
       toast.success('Payment submitted for verification');
       router.push('/dashboard/client');
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Failed to submit payment');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to submit payment'));
     } finally {
       setSubmitting(false);
     }
