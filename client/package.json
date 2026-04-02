@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "install:all": "npm install"
+    "install:all": "npm --prefix .. run install:all"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.0",
