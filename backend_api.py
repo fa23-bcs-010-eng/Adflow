@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import time
 import uuid
 from pathlib import Path
@@ -53,24 +54,30 @@ class ChatResponse(BaseModel):
 
 def _normalize_reply(text: str) -> str:
     cleaned = (text or "").replace("**", "")
-    lines: list[str] = []
+    cleaned = re.sub(r"^\s*[\*\-]\s+", "", cleaned, flags=re.MULTILINE)
+
+    filtered_lines: list[str] = []
     for raw_line in cleaned.splitlines():
-      line = raw_line.lstrip()
-      if line.startswith("* "):
-          line = line[2:]
-      lines.append(line)
-    cleaned = "\n".join(lines).strip()
+        line = raw_line.strip()
+        if not line:
+            continue
+        lower = line.lower()
+        # Remove any time-helper prompts or session boilerplate.
+        if "session is ready" in lower:
+            continue
+        if "current time" in lower:
+            continue
+        if "specific city" in lower:
+            continue
+        if "time in" in lower and "ask" in lower:
+            continue
+        filtered_lines.append(line)
 
-    lower = cleaned.lower()
-    if "session is ready" in lower and "current time in a city" in lower:
+    cleaned = "\n".join(filtered_lines).strip()
+    if not cleaned:
         return "I am the AI assistant of Adflow."
-    if "would you like to know the current time" in lower:
-        cleaned = cleaned.replace(
-            "Would you like to know the current time in any specific city while you're thinking about watches?",
-            "",
-        ).strip()
 
-    return cleaned or "I am the AI assistant of Adflow."
+    return cleaned
 
 
 def _ensure_session(session_id: str) -> None:
