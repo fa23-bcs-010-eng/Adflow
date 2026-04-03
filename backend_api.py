@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 import uuid
 from pathlib import Path
 
@@ -66,23 +67,34 @@ def _extract_reply(message: str, session_id: str) -> str:
     user_content = types.UserContent(parts=[types.Part.from_text(text=message)])
     chunks: list[str] = []
 
-    events = runner.run(
-        user_id=DEFAULT_USER_ID,
-        session_id=session_id,
-        new_message=user_content,
-    )
+    try:
+        events = runner.run(
+            user_id=DEFAULT_USER_ID,
+            session_id=session_id,
+            new_message=user_content,
+        )
 
-    for event in events:
-        if event.error_message:
-            raise HTTPException(status_code=500, detail=event.error_message)
+        for event in events:
+            if event.error_message:
+                detail = str(event.error_message)
+                if "503" in detail or "UNAVAILABLE" in detail.upper():
+                    raise HTTPException(status_code=503, detail=detail)
+                raise HTTPException(status_code=500, detail=detail)
 
-        if not event.content or not event.content.parts:
-            continue
+            if not event.content or not event.content.parts:
+                continue
 
-        for part in event.content.parts:
-            text = getattr(part, "text", None)
-            if text:
-                chunks.append(text)
+            for part in event.content.parts:
+                text = getattr(part, "text", None)
+                if text:
+                    chunks.append(text)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        detail = str(exc)
+        if "503" in detail or "UNAVAILABLE" in detail.upper():
+            raise HTTPException(status_code=503, detail=detail) from exc
+        raise HTTPException(status_code=500, detail=detail) from exc
 
     if not chunks:
         return "I could not generate a response. Please try again."
@@ -100,14 +112,36 @@ def chat(payload: ChatRequest) -> ChatResponse:
     session_id = payload.session_id or str(uuid.uuid4())
     _ensure_session(session_id)
 
-    try:
-        reply = _extract_reply(payload.message.strip(), session_id)
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Agent error: {exc}") from exc
+    message = payload.message.strip()
 
-    return ChatResponse(reply=reply, session_id=session_id)
+    # Retry transient overload responses from Gemini.
+    max_attempts = 3
+    delays = [0.9, 1.8]
+    last_error: HTTPException | None = None
+
+    for attempt in range(max_attempts):
+        try:
+            reply = _extract_reply(message, session_id)
+            return ChatResponse(reply=reply, session_id=session_id)
+        except HTTPException as exc:
+            last_error = exc
+            if exc.status_code != 503 or attempt == max_attempts - 1:
+                break
+            time.sleep(delays[attempt])
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=f"Agent error: {exc}") from exc
+
+    # Keep the chat usable even when model traffic is high.
+    if last_error and last_error.status_code == 503:
+        fallback = (
+            "The AI model is temporarily busy due to high traffic. "
+            "Please retry in a few seconds."
+        )
+        return ChatResponse(reply=fallback, session_id=session_id)
+
+    if last_error:
+        raise last_error
+    raise HTTPException(status_code=500, detail="Unknown agent error")
 
 
 if WEB_DIR.exists():
