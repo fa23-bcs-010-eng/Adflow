@@ -32,7 +32,12 @@ function safeSessionId(sessionId?: string | null): string {
 }
 
 function getBackendUrl(): string | null {
-  const raw = (process.env.AI_BACKEND_URL || process.env.NEXT_PUBLIC_CHATBOT_URL || '').trim();
+  const raw = (
+    process.env.AI_BACKEND_URL ||
+    process.env.NEXT_PUBLIC_CHATBOT_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    ''
+  ).trim();
   if (!raw) return null;
 
   try {
