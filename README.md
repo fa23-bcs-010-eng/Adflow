@@ -64,6 +64,20 @@ graph TD
 - **Super/Admin Dashboard**: High-level platform analytics, revenue tracking, user role management, and manual payment verifications.
 - **Automated Cron Jobs**: Background tasks that automatically expire old ads, manage subscription states, and perform system cleanups.
 
+### AI Assistant (Adflow AI Mode)
+- **Floating AI Button**: Users can open AI Mode from any page and chat without leaving the current screen.
+- **Adflow Guidance**: Helps users with ad posting, package selection, dashboard usage, and account flow.
+- **Production-Safe Integration**: AI chat is routed through Next.js API (`/api/ai/chat`) instead of `localhost` iframe dependency.
+- **Backend Options**: Works with a deployed Python ADK backend (`AI_BACKEND_URL`) or direct Gemini API fallback (`GOOGLE_API_KEY`).
+- **Clean Response Formatting**: Removes markdown stars/bullets and avoids irrelevant time prompts for normal Adflow conversations.
+
+#### AI Request Flow
+1. User sends a message from the AI Mode panel.
+2. Frontend calls `POST /api/ai/chat`.
+3. Route tries `AI_BACKEND_URL/chat` first.
+4. If unavailable, route tries Gemini direct with `gemini-2.5-flash`.
+5. Response is normalized and returned to the widget.
+
 ---
 
 ## � Subscription Packages
@@ -175,6 +189,9 @@ The application requires specific environment variables to bridge the frontend a
 | `PORT` | Local port for Express server (default: `4000`) |
 | `NODE_ENV` | Environment mode (`development` or `production`) |
 | `NEXT_PUBLIC_API_URL` | The URL where the server is hosted (for client requests) |
+| `AI_BACKEND_URL` | Public URL of deployed Python AI backend (e.g., Railway/Render URL) |
+| `GOOGLE_API_KEY` | Gemini API key for AI fallback (server-side) |
+| `GEMINI_API_KEY` | Optional alias for Gemini API key |
 
 ### Client `.env.local`
 | Variable | Description |
@@ -182,6 +199,7 @@ The application requires specific environment variables to bridge the frontend a
 | `NEXT_PUBLIC_API_URL` | Points to your backend (e.g., `http://localhost:4000`) |
 | `NEXT_PUBLIC_SUPABASE_URL` | Same as Server URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same as Server Anon Key |
+| `NEXT_PUBLIC_CHATBOT_URL` | Optional chatbot URL reference (avoid localhost in production) |
 
 ---
 
@@ -374,11 +392,39 @@ Add the following variables in the Vercel Dashboard:
 - `NEXT_PUBLIC_SUPABASE_URL` (Match `SUPABASE_URL`)
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Match `SUPABASE_ANON_KEY`)
 
-### 3. Post-Deployment
+**AI (Recommended)**
+- `AI_BACKEND_URL` (Public Railway/Render URL of `backend_api.py`, e.g. `https://your-ai.up.railway.app`)
+- `GOOGLE_API_KEY` (Gemini key used as fallback if backend is unavailable)
+- `GEMINI_API_KEY` (Optional alternative to `GOOGLE_API_KEY`)
+
+### 3. AI Backend Deployment (Railway)
+Deploy these files from repo root:
+- `backend_api.py`
+- `requirements.txt`
+- `my_agent/`
+- `web/`
+
+Do not deploy:
+- `.venv/`
+- `__pycache__/`
+
+Railway start command:
+```bash
+uvicorn backend_api:app --host 0.0.0.0 --port $PORT
+```
+
+Minimum Railway env variable:
+```env
+GOOGLE_API_KEY=your_key_here
+```
+
+### 4. Post-Deployment
 After the first deployment:
 1. Run seed script to populate MongoDB: `npm run seed`
 2. Verify health endpoint: `https://your-deployment.vercel.app/api/health`
 3. Check database stats: `https://your-deployment.vercel.app/api/internal/db/stats`
+4. Verify AI backend health: `https://your-ai.up.railway.app/health`
+5. Verify live app AI on Vercel: [https://adflowpro-kappa.vercel.app/](https://adflowpro-kappa.vercel.app/)
 
 ---
 
