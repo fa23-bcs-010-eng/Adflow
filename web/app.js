@@ -7,7 +7,7 @@ const toggleBtnEl = document.getElementById("ai-toggle");
 const toggleLabelEl = document.getElementById("ai-toggle-label");
 const closeBtnEl = document.getElementById("chat-close");
 
-const SESSION_KEY = "adflow_ai_session_id";
+const SESSION_KEY = "adflow_ai_session_id_v2";
 let sessionId = localStorage.getItem(SESSION_KEY) || "";
 let isOpen = false;
 
