@@ -101,7 +101,7 @@ export default function Navbar() {
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition">
                       <LayoutDashboard size={16} className="text-cyan-300" /> Dashboard
                     </Link>
-                    <Link href="/dashboard/client/notifications" onClick={() => setDropOpen(false)}
+                    <Link href="/dashboard/client?tab=notifications" onClick={() => setDropOpen(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition">
                       <Bell size={16} className="text-cyan-300" /> Notifications
                     </Link>
