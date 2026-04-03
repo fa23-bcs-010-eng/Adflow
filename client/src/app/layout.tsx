@@ -4,6 +4,7 @@ import './globals.css';
 import Providers from '@/components/Providers';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import AiModeWidget from '@/components/AiModeWidget';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
           <main className="min-h-screen pt-2">{children}</main>
           <Footer />
+          <AiModeWidget />
         </Providers>
       </body>
     </html>

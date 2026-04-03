@@ -308,3 +308,79 @@ html[data-theme='light'] .glass {
   font-size: 0.7rem;
   padding: 0.15rem 0.5rem;
 }
+
+.ai-mode-toggle {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0ea5e9, #0284c7);
+  color: #fff;
+  font-weight: 700;
+  padding: 10px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(14, 165, 233, 0.35);
+}
+
+.ai-mode-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #031525;
+  color: #7dd3fc;
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.ai-mode-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 72px;
+  z-index: 1000;
+  width: min(420px, calc(100vw - 24px));
+  height: min(680px, calc(100vh - 110px));
+  border: 1px solid var(--surface-border-strong);
+  border-radius: 14px;
+  background: var(--surface-bg);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.ai-mode-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.ai-mode-head p {
+  margin: 0;
+  color: var(--page-text-strong);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.ai-mode-head button {
+  border: 1px solid var(--surface-border-strong);
+  background: var(--surface-soft);
+  color: var(--page-text-strong);
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.ai-mode-frame {
+  width: 100%;
+  height: calc(100% - 49px);
+  border: none;
+  background: #070c16;
+}
