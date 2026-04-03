@@ -77,7 +77,7 @@ formEl.addEventListener("submit", async (event) => {
   }
 });
 
-addMessage("assistant", "Hi. I am your Adflow AI Agent. Ask me the time in any city.");
+addMessage("assistant", "I am Ai Agent of Adflow for your guide ");
 
 toggleBtnEl.addEventListener("click", () => {
   setChatOpen(!isOpen);
