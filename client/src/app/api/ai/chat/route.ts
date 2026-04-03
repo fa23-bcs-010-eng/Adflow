@@ -54,31 +54,47 @@ function getBackendUrl(): string | null {
   }
 }
 
+function buildBackendChatEndpoints(base: string): string[] {
+  const normalized = base.replace(/\/+$/, '');
+  if (normalized.toLowerCase().endsWith('/chat')) {
+    return [normalized];
+  }
+  return [`${normalized}/chat`, normalized];
+}
+
 async function tryBackendProxy(message: string, sessionId: string): Promise<string | null> {
   const base = getBackendUrl();
   if (!base) return null;
 
-  const res = await fetch(`${base}/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, session_id: sessionId }),
-    signal: AbortSignal.timeout(25000),
-  });
+  const endpoints = buildBackendChatEndpoints(base);
+  for (const endpoint of endpoints) {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, session_id: sessionId }),
+      signal: AbortSignal.timeout(25000),
+    });
 
-  const payload = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(
-      typeof payload?.detail === 'string'
-        ? payload.detail
-        : typeof payload?.error === 'string'
-          ? payload.error
-          : `AI backend error (${res.status})`
-    );
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      // If backend endpoint shape is different, try next candidate or fallback provider.
+      if (res.status === 404 || res.status === 405) {
+        continue;
+      }
+      throw new Error(
+        typeof payload?.detail === 'string'
+          ? payload.detail
+          : typeof payload?.error === 'string'
+            ? payload.error
+            : `AI backend error (${res.status})`
+      );
+    }
+
+    if (typeof payload?.reply === 'string' && payload.reply.trim().length > 0) {
+      return normalizeReply(payload.reply);
+    }
   }
 
-  if (typeof payload?.reply === 'string' && payload.reply.trim().length > 0) {
-    return normalizeReply(payload.reply);
-  }
   return null;
 }
 
@@ -135,7 +151,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message is required.' }, { status: 400 });
     }
 
-    const proxied = await tryBackendProxy(message, sessionId);
+    let proxied: string | null = null;
+    try {
+      proxied = await tryBackendProxy(message, sessionId);
+    } catch {
+      proxied = null;
+    }
+
     if (proxied) {
       return NextResponse.json({ reply: proxied, session_id: sessionId });
     }
