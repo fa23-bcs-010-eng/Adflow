@@ -1,0 +1,129 @@
+from __future__ import annotations
+
+import os
+import uuid
+from pathlib import Path
+
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+
+from google.adk.runners import InMemoryRunner
+from google.genai import types
+from my_agent.agent import root_agent
+
+
+BASE_DIR = Path(__file__).resolve().parent
+WEB_DIR = BASE_DIR / "web"
+MY_AGENT_ENV = BASE_DIR / "my_agent" / ".env"
+
+# Load local env files so the ADK runner can access GOOGLE_API_KEY.
+load_dotenv(BASE_DIR / ".env", override=False)
+load_dotenv(MY_AGENT_ENV, override=False)
+
+APP_NAME = "adflow-chatbot"
+DEFAULT_USER_ID = "web-user"
+
+app = FastAPI(title="Adflow AI Agent API", version="1.0.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+runner = InMemoryRunner(agent=root_agent, app_name=APP_NAME)
+_known_sessions: set[str] = set()
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=2000)
+    session_id: str | None = None
+
+
+class ChatResponse(BaseModel):
+    reply: str
+    session_id: str
+
+
+def _ensure_session(session_id: str) -> None:
+    if session_id in _known_sessions:
+        return
+
+    runner.session_service.create_session_sync(
+        app_name=APP_NAME,
+        user_id=DEFAULT_USER_ID,
+        session_id=session_id,
+    )
+    _known_sessions.add(session_id)
+
+
+def _extract_reply(message: str, session_id: str) -> str:
+    user_content = types.UserContent(parts=[types.Part.from_text(text=message)])
+    chunks: list[str] = []
+
+    events = runner.run(
+        user_id=DEFAULT_USER_ID,
+        session_id=session_id,
+        new_message=user_content,
+    )
+
+    for event in events:
+        if event.error_message:
+            raise HTTPException(status_code=500, detail=event.error_message)
+
+        if not event.content or not event.content.parts:
+            continue
+
+        for part in event.content.parts:
+            text = getattr(part, "text", None)
+            if text:
+                chunks.append(text)
+
+    if not chunks:
+        return "I could not generate a response. Please try again."
+
+    return chunks[-1]
+
+
+@app.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+@app.post("/chat", response_model=ChatResponse)
+def chat(payload: ChatRequest) -> ChatResponse:
+    session_id = payload.session_id or str(uuid.uuid4())
+    _ensure_session(session_id)
+
+    try:
+        reply = _extract_reply(payload.message.strip(), session_id)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Agent error: {exc}") from exc
+
+    return ChatResponse(reply=reply, session_id=session_id)
+
+
+if WEB_DIR.exists():
+    app.mount("/web", StaticFiles(directory=str(WEB_DIR)), name="web")
+
+
+@app.get("/")
+def index() -> FileResponse:
+    index_file = WEB_DIR / "index.html"
+    if not index_file.exists():
+        raise HTTPException(status_code=404, detail="web/index.html not found")
+    return FileResponse(index_file)
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run("backend_api:app", host="0.0.0.0", port=port, reload=True)
