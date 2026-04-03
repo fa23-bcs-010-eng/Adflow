@@ -7,10 +7,10 @@ type AuthUser = {
 };
 
 export function issueToken(user: AuthUser) {
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET;
 
   if (!secret) {
-    throw new Error('JWT_SECRET is not configured');
+    throw new Error('JWT secret is not configured');
   }
 
   return jwt.sign(
