@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Megaphone,
@@ -29,7 +29,6 @@ type ClientTab = 'ads' | 'create' | 'notifications' | 'analytics' | 'settings' |
 export default function ClientDashboard() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [ads, setAds] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [tab, setTab] = useState<ClientTab>('ads');
@@ -62,12 +61,13 @@ export default function ClientDashboard() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    const tabParam = searchParams.get('tab');
+    if (typeof window === 'undefined') return;
+    const tabParam = new URLSearchParams(window.location.search).get('tab');
     if (!tabParam) return;
     if (['ads', 'create', 'notifications', 'analytics', 'settings', 'billing'].includes(tabParam)) {
       setTab(tabParam as ClientTab);
     }
-  }, [searchParams]);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
