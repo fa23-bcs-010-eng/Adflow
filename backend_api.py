@@ -51,6 +51,28 @@ class ChatResponse(BaseModel):
     session_id: str
 
 
+def _normalize_reply(text: str) -> str:
+    cleaned = (text or "").replace("**", "")
+    lines: list[str] = []
+    for raw_line in cleaned.splitlines():
+      line = raw_line.lstrip()
+      if line.startswith("* "):
+          line = line[2:]
+      lines.append(line)
+    cleaned = "\n".join(lines).strip()
+
+    lower = cleaned.lower()
+    if "session is ready" in lower and "current time in a city" in lower:
+        return "I am the AI assistant of Adflow."
+    if "would you like to know the current time" in lower:
+        cleaned = cleaned.replace(
+            "Would you like to know the current time in any specific city while you're thinking about watches?",
+            "",
+        ).strip()
+
+    return cleaned or "I am the AI assistant of Adflow."
+
+
 def _ensure_session(session_id: str) -> None:
     if session_id in _known_sessions:
         return
@@ -99,7 +121,7 @@ def _extract_reply(message: str, session_id: str) -> str:
     if not chunks:
         return "I could not generate a response. Please try again."
 
-    return chunks[-1]
+    return _normalize_reply(chunks[-1])
 
 
 @app.get("/health")
