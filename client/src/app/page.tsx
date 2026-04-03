@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Star, TrendingUp, Shield, Zap, Code } from 'lucide-react';
+import { ArrowRight, Star, TrendingUp, Shield, Zap, Code, Bot, BrainCircuit, Sparkles } from 'lucide-react';
 import api from '@/lib/api';
 import AdCard from '@/components/AdCard';
 
@@ -422,12 +422,12 @@ export default function HomePage() {
 
           <div className="text-center md:text-left relative z-10 w-full">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-300 font-medium mb-4">
-              <Code size={12} /> Architect & Engineer
+              <BrainCircuit size={12} /> AI Architect & Engineer
             </div>
             <h3 className="text-3xl font-black text-white mb-2">Hammad Raheel Sarwar</h3>
             <p className="text-lg text-cyan-300 font-medium mb-4">Founder & Lead Developer</p>
             <p className="text-gray-300 md:text-lg mb-6 leading-relaxed">
-              Hammad Raheel Sarwar completely engineered AdFlow Pro from the ground up, combining modern Next.js server actions with highly optimized relational database design to deliver Pakistan's premier sponsored listing platform. With a passion for scalable architectures and stunning UI/UX, he single-handedly transformed a complex marketplace vision into a rapid, seamless reality.
+              Hammad Raheel Sarwar completely engineered AdFlow Pro from the ground up, combining modern Next.js architecture with optimized relational database design to deliver Pakistan's premier sponsored listing platform. He also integrated AI assistant workflows for ad-writing guidance, customer support automation, and smarter dashboard experiences.
             </p>
             <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">
               <div className="flex items-center gap-2 bg-gray-800/50 px-4 py-2 rounded-xl border border-gray-700/50 text-sm text-gray-200 shadow-inner">
@@ -438,6 +438,12 @@ export default function HomePage() {
               </div>
               <div className="flex items-center gap-2 bg-gray-800/50 px-4 py-2 rounded-xl border border-gray-700/50 text-sm text-gray-200 shadow-inner">
                 <Zap size={16} className="text-violet-400" /> UI/UX Design
+              </div>
+              <div className="flex items-center gap-2 bg-gray-800/50 px-4 py-2 rounded-xl border border-gray-700/50 text-sm text-gray-200 shadow-inner">
+                <Bot size={16} className="text-cyan-400" /> AI Agent Integration
+              </div>
+              <div className="flex items-center gap-2 bg-gray-800/50 px-4 py-2 rounded-xl border border-gray-700/50 text-sm text-gray-200 shadow-inner">
+                <Sparkles size={16} className="text-emerald-400" /> Prompt Engineering
               </div>
             </div>
           </div>
