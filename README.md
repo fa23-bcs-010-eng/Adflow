@@ -11,6 +11,19 @@
   </p>
 </div>
 
+## Demo Accounts
+
+Use these demo credentials on the login page for quick testing:
+
+| Role | Demo Gmail | Demo Password |
+| :--- | :--- | :--- |
+| Client | `client_demo@adflow.com` | `demo123` |
+| Moderator | `moderator_demo@adflow.com` | `demo123` |
+| Admin | `admin_demo@adflow.com` | `demo123` |
+| Super Admin | `super_admin_demo@adflow.com` | `demo123` |
+
+---
+
 ## Live Demo
 
 Check live project: [https://adflowpro-kappa.vercel.app/](https://adflowpro-kappa.vercel.app/)
