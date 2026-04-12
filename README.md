@@ -15,6 +15,10 @@
 
 Check live project: [https://adflowpro-kappa.vercel.app/](https://adflowpro-kappa.vercel.app/)
 
+### APK Download
+
+Download Android app: [Adflow.apk](./Adflow.apk)
+
 ### Demo Logins
 
 Use these demo credentials on the login page:
