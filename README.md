@@ -17,7 +17,7 @@ Check live project: [https://adflowpro-kappa.vercel.app/](https://adflowpro-kapp
 
 ### APK Download
 
-Download Android app: [Adflow.apk](./Adflow.apk)
+Download Android app: [Adflow.apk](https://github.com/fa23-bcs-010-eng/Adflow/raw/main/Adflow.apk)
 
 ### Demo Logins
 
