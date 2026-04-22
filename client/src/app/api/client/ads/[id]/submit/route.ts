@@ -26,7 +26,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const updated = await supabaseAdmin
     .from('ads')
-    .update({ status: 'submitted' })
+    .update({
+      status: 'published',
+      is_featured: true,
+      published_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+      rank_score: 100,
+    })
     .eq('id', id)
     .eq('user_id', user.id)
     .select('*')

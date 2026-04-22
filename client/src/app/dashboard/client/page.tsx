@@ -157,8 +157,19 @@ export default function ClientDashboard() {
   const handleSubmitAd = async (adId: string) => {
     try {
       await api.post(`/client/ads/${adId}/submit`);
-      setAds((prev) => prev.map((a) => (a.id === adId ? { ...a, status: 'submitted' } : a)));
-      toast.success('Ad submitted for review');
+      setAds((prev) =>
+        prev.map((a) =>
+          a.id === adId
+            ? {
+                ...a,
+                status: 'published',
+                is_featured: true,
+                published_at: new Date().toISOString(),
+              }
+            : a
+        )
+      );
+      toast.success('Ad is now live and featured');
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, 'Failed to submit'));
     }
@@ -345,7 +356,7 @@ export default function ClientDashboard() {
                               <div className="flex items-center gap-2">
                                 {ad.status === 'draft' && (
                                   <button onClick={() => handleSubmitAd(ad.id)} className="btn-primary text-xs !py-1.5 !px-2.5 inline-flex items-center gap-1">
-                                    <Send size={11} /> Submit
+                                    <Send size={11} /> Publish
                                   </button>
                                 )}
                                 {['draft', 'submitted', 'payment_pending'].includes(ad.status) && (
