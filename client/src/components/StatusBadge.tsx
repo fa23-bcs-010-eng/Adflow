@@ -9,6 +9,14 @@ const STATUS_MAP: Record<string, { label: string; className: string }> = {
   published:         { label: 'Published',        className: 'badge-published' },
   expired:           { label: 'Expired',          className: 'badge-expired' },
   archived:          { label: 'Archived',         className: 'badge-draft' },
+  open:              { label: 'Open',             className: 'badge-payment' },
+  resolved:          { label: 'Resolved',         className: 'badge-verified' },
+  dismissed:         { label: 'Dismissed',        className: 'badge-expired' },
+  confirmed:         { label: 'Confirmed',        className: 'badge-verified' },
+  processing:        { label: 'Processing',       className: 'badge-review' },
+  shipped:           { label: 'Shipped',          className: 'badge-submitted' },
+  delivered:         { label: 'Delivered',        className: 'badge-published' },
+  cancelled:         { label: 'Cancelled',        className: 'badge-expired' },
 };
 
 export default function StatusBadge({ status }: { status: string }) {

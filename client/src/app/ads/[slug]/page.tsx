@@ -13,12 +13,17 @@ import {
   ShieldCheck,
   ShoppingCart,
   CreditCard,
+  Star,
+  Flag,
+  BadgeCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
 import toast from 'react-hot-toast';
+import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
 
 type AdDetails = {
   id: string;
@@ -37,6 +42,11 @@ type AdDetails = {
     full_name?: string;
     email?: string;
     member_since?: string;
+    business_name?: string | null;
+    phone?: string | null;
+    whatsapp?: string | null;
+    is_verified?: boolean;
+    published_ads_count?: number;
   } | null;
   contact_phone?: string;
   contact_email?: string;
@@ -49,8 +59,16 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
   const { user } = useAuth();
   const { addItem } = useCart();
   const [ad, setAd] = useState<AdDetails | null>(null);
+  const [reviewsData, setReviewsData] = useState<{ average_rating: number; total_reviews: number; reviews: any[] }>({
+    average_rating: 0,
+    total_reviews: 0,
+    reviews: [],
+  });
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
+  const [reportReason, setReportReason] = useState('');
+  const [reportDetails, setReportDetails] = useState('');
+  const [submittingReport, setSubmittingReport] = useState(false);
 
   const requireLoginBeforeContact = (
     event: React.MouseEvent<HTMLAnchorElement>,
@@ -77,6 +95,14 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
         if (detailRes.ok) {
           const detailData = await detailRes.json();
           setAd(detailData);
+          try {
+            const reviewsRes = await fetch(`/api/reviews?ad_id=${detailData.id}`, { cache: 'no-store' });
+            if (reviewsRes.ok) {
+              setReviewsData(await reviewsRes.json());
+            }
+          } catch {
+            // Keep page working even if reviews fail.
+          }
           setLoading(false);
           return;
         }
@@ -138,6 +164,7 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
       price: Number(ad.price || 0),
       image: primaryImage,
     });
+    api.post(`/client/ads/${ad.id}/track`, { event_type: 'cart_add', meta: { source: 'ad-detail' } }).catch(() => {});
     toast.success('Added to cart');
   };
 
@@ -150,7 +177,35 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
       price: Number(ad.price || 0),
       image: primaryImage,
     });
+    api.post(`/client/ads/${ad.id}/track`, { event_type: 'cart_add', meta: { source: 'buy-now' } }).catch(() => {});
     router.push('/checkout');
+  };
+
+  const handleReportAd = async () => {
+    if (!user) {
+      toast.error('Please login first to report this ad.');
+      router.push(`/auth/login?next=${encodeURIComponent(`/ads/${slug}`)}`);
+      return;
+    }
+    if (!reportReason.trim()) {
+      toast.error('Please enter a report reason.');
+      return;
+    }
+    setSubmittingReport(true);
+    try {
+      await api.post('/client/reports', {
+        ad_id: ad.id,
+        reason: reportReason,
+        details: reportDetails,
+      });
+      setReportReason('');
+      setReportDetails('');
+      toast.success('Report submitted to moderation');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to submit report'));
+    } finally {
+      setSubmittingReport(false);
+    }
   };
 
   return (
@@ -210,16 +265,16 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
 
             <div className="flex gap-2 flex-wrap mt-3">
               {ad.category && (
-                <span className="badge-draft flex items-center gap-1">
+                <Link href={`/marketplace/${ad.city?.slug || 'all'}/${ad.category.slug}`} className="badge-draft flex items-center gap-1">
                   <Tag size={10} />
                   {ad.category.name}
-                </span>
+                </Link>
               )}
               {ad.city && (
-                <span className="badge-draft flex items-center gap-1">
+                <Link href={`/marketplace/${ad.city.slug}/${ad.category?.slug || 'all'}`} className="badge-draft flex items-center gap-1">
                   <MapPin size={10} />
                   {ad.city.name}
-                </span>
+                </Link>
               )}
               {ad.package?.name && <span className="badge-featured">{ad.package.name}</span>}
             </div>
@@ -249,13 +304,32 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
 
           <div className="card p-4 space-y-3">
             <p className="text-sm font-semibold text-gray-300">Owner Details</p>
-            <p className="text-white font-medium">{ad.seller?.full_name || 'Adflow Verified Seller'}</p>
+            <div>
+              <p className="text-white font-medium">{ad.seller?.business_name || ad.seller?.full_name || 'Adflow Verified Seller'}</p>
+              {ad.seller?.full_name && ad.seller?.business_name && (
+                <p className="text-xs text-gray-400 mt-1">{ad.seller.full_name}</p>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {ad.seller?.is_verified && (
+                <span className="badge-featured inline-flex items-center gap-1">
+                  <BadgeCheck size={10} /> Verified Seller
+                </span>
+              )}
+              <span className="badge-draft inline-flex items-center gap-1">
+                <Star size={10} /> {reviewsData.average_rating || 0} / 5
+              </span>
+              <span className="badge-draft">{reviewsData.total_reviews || 0} reviews</span>
+            </div>
             {ad.seller?.member_since && (
               <p className="text-xs text-gray-500 inline-flex items-center gap-1">
                 <CalendarClock size={12} /> Member since{' '}
                 {new Date(ad.seller.member_since).toLocaleDateString()}
               </p>
             )}
+            <p className="text-xs text-gray-500">
+              Published ads: {ad.seller?.published_ads_count || 0}
+            </p>
             <div className="space-y-2">
               {(ad.contact_phone || ad.contact_whatsapp) && (
                 <a
@@ -299,6 +373,26 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
                 </a>
               )}
             </div>
+            <div className="rounded-xl border border-red-400/20 bg-red-500/5 p-3 space-y-2">
+              <p className="text-xs font-semibold text-red-200 inline-flex items-center gap-1">
+                <Flag size={12} /> Report this ad
+              </p>
+              <input
+                className="input"
+                placeholder="Reason"
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+              />
+              <textarea
+                className="input h-20 resize-none"
+                placeholder="Extra details"
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+              />
+              <button onClick={handleReportAd} disabled={submittingReport} className="btn-danger text-xs w-full">
+                {submittingReport ? 'Submitting...' : 'Submit Complaint'}
+              </button>
+            </div>
           </div>
 
           <div className="card p-4 space-y-3">
@@ -337,6 +431,34 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
           <p className="text-gray-400 leading-relaxed whitespace-pre-wrap">{ad.description}</p>
         </div>
       )}
+
+      <div className="card p-6 mt-8">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h2 className="font-semibold text-white">Seller Reviews</h2>
+          <div className="text-sm text-cyan-300 inline-flex items-center gap-2">
+            <Star size={14} className="text-amber-300" />
+            {reviewsData.average_rating || 0} / 5 from {reviewsData.total_reviews || 0} buyers
+          </div>
+        </div>
+        {reviewsData.reviews.length === 0 ? (
+          <p className="text-gray-400">No buyer reviews yet for this seller on this product.</p>
+        ) : (
+          <div className="space-y-3">
+            {reviewsData.reviews.map((review) => (
+              <div key={review.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <p className="text-white font-medium">{review.title || 'Buyer review'}</p>
+                  <span className="text-amber-300 text-sm">{review.rating} / 5</span>
+                </div>
+                <p className="text-sm text-slate-300/80 mb-2">{review.body || 'Verified buyer shared a rating.'}</p>
+                <p className="text-xs text-slate-500">
+                  {review.reviewer?.full_name || 'Verified buyer'} | {new Date(review.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

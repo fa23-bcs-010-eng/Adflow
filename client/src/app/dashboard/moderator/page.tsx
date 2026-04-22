@@ -22,6 +22,7 @@ export default function ModeratorDashboard() {
     pending_review_ads: 0,
     expired_ads: 0,
   });
+  const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<any>(null);
   const [note, setNote] = useState('');
@@ -42,8 +43,8 @@ export default function ModeratorDashboard() {
 
   useEffect(() => {
     if (!user || !['moderator', 'admin', 'super_admin'].includes(user.role)) return;
-    Promise.allSettled([api.get('/moderator/review-queue'), api.get('/admin/ads-summary')])
-      .then(([queueRes, summaryRes]) => {
+    Promise.allSettled([api.get('/moderator/review-queue'), api.get('/admin/ads-summary'), api.get('/moderator/reports')])
+      .then(([queueRes, summaryRes, reportsRes]) => {
         if (queueRes.status === 'fulfilled') {
           setQueue(queueRes.value.data);
           if (queueRes.value.data.length > 0) setSelected(queueRes.value.data[0]);
@@ -55,10 +56,14 @@ export default function ModeratorDashboard() {
         if (summaryRes.status === 'fulfilled') {
           setAdsSummary(summaryRes.value.data);
         }
+        if (reportsRes.status === 'fulfilled') {
+          setReports(reportsRes.value.data);
+        }
       })
       .catch(() => {
         setQueue([]);
         setSelected(null);
+        setReports([]);
       })
       .finally(() => setLoading(false));
   }, [user]);
@@ -82,9 +87,19 @@ export default function ModeratorDashboard() {
 
   const reviewStats = {
     pending: queue.length,
-    flagged: queue.filter((ad) => ad.moderator_note || ad.status === 'under_review').length,
+    flagged: reports.filter((report) => ['open', 'under_review'].includes(report.status)).length,
     approved: queue.filter((ad) => ad.status === 'payment_pending').length,
     needsChanges: queue.filter((ad) => ad.status === 'submitted').length,
+  };
+
+  const handleReportAction = async (reportId: string, status: 'under_review' | 'resolved' | 'dismissed') => {
+    try {
+      await api.patch(`/moderator/reports/${reportId}`, { status });
+      setReports((prev) => prev.map((report) => (report.id === reportId ? { ...report, status } : report)));
+      toast.success(`Report marked ${status}`);
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to update report'));
+    }
   };
 
   const sidebarItems = [
@@ -238,12 +253,29 @@ export default function ModeratorDashboard() {
                   <p className="text-sm text-slate-600 mt-1">Ads with notes, warnings, or manual attention required.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[['Manual review', reviewStats.flagged], ['Hidden issues', queue.filter((ad) => ad.moderator_note).length], ['Escalations', Math.max(reviewStats.flagged - queue.filter((ad) => ad.moderator_note).length, 0)]].map(([label, value]) => (
+                  {[['Open complaints', reviewStats.flagged], ['Resolved today', reports.filter((report) => report.status === 'resolved').length], ['Dismissed', reports.filter((report) => report.status === 'dismissed').length]].map(([label, value]) => (
                     <div key={label as string} className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-sm text-slate-500">{label}</p><p className="text-3xl font-black text-slate-900 mt-2">{value as number}</p></div>
                   ))}
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
-                  {queue.length === 0 ? <p className="text-slate-500">No flagged ads right now.</p> : queue.filter((ad) => ad.moderator_note || ad.status === 'under_review').map((ad) => (<div key={ad.id} className="rounded-xl border border-slate-200 p-4 flex items-start justify-between gap-4"><div><p className="font-semibold text-slate-900">{ad.title}</p><p className="text-sm text-slate-500 mt-1">{ad.moderator_note || 'Awaiting moderator action'}</p></div><StatusBadge status={ad.status} /></div>))}
+                  {reports.length === 0 ? <p className="text-slate-500">No complaint reports right now.</p> : reports.map((report) => (
+                    <div key={report.id} className="rounded-xl border border-slate-200 p-4 flex flex-col md:flex-row md:items-start justify-between gap-4">
+                      <div>
+                        <p className="font-semibold text-slate-900">{report.ad?.title || 'Reported ad'}</p>
+                        <p className="text-sm text-slate-500 mt-1">{report.reason}</p>
+                        {report.details && <p className="text-sm text-slate-500 mt-1">{report.details}</p>}
+                        <p className="text-xs text-slate-400 mt-2">Reporter: {report.reporter?.full_name || report.reporter?.email || 'Unknown'} | Seller: {report.seller?.full_name || report.seller?.email || 'Unknown'}</p>
+                      </div>
+                      <div className="flex flex-col items-start gap-2">
+                        <StatusBadge status={report.status} />
+                        <div className="flex flex-wrap gap-2">
+                          <button onClick={() => handleReportAction(report.id, 'under_review')} className="btn-secondary text-xs">Review</button>
+                          <button onClick={() => handleReportAction(report.id, 'resolved')} className="btn-primary text-xs">Resolve</button>
+                          <button onClick={() => handleReportAction(report.id, 'dismissed')} className="btn-danger text-xs">Dismiss</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

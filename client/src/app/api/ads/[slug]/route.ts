@@ -20,6 +20,19 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
   }
 
   if (ad) {
+    await supabaseAdmin.from('ad_analytics_events').insert({
+      ad_id: ad.id as string,
+      user_id: null,
+      seller_id: ad.user_id as string,
+      event_type: 'view',
+      meta: { source: 'ad-detail' },
+    });
+
+    await supabaseAdmin
+      .from('ads')
+      .update({ view_count: Number(ad.view_count || 0) + 1 })
+      .eq('id', ad.id);
+
     const { data: owner } = await supabaseAdmin
       .from('users')
       .select('full_name,email,created_at')
@@ -38,6 +51,7 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
 
     return NextResponse.json({
       ...ad,
+      view_count: Number(ad.view_count || 0) + 1,
       seller: owner
         ? {
             full_name: owner.full_name,
@@ -50,7 +64,7 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
             published_ads_count: publishedAdsCount || 0,
           }
         : null,
-      contact_email: ad.contact_email || sellerProfile?.phone || owner?.email || null,
+      contact_email: ad.contact_email || owner?.email || null,
       contact_phone: ad.contact_phone || sellerProfile?.phone || null,
       contact_whatsapp: ad.contact_whatsapp || sellerProfile?.whatsapp || null,
     });

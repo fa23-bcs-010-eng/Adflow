@@ -174,6 +174,14 @@ export async function POST(request: NextRequest) {
       ad_id: ad.id as string,
     });
 
+    await supabaseAdmin.from('ad_analytics_events').insert({
+      ad_id: ad.id as string,
+      user_id: user.id,
+      seller_id: sellerId,
+      event_type: 'chat',
+      meta: { conversation_id: conversationId },
+    });
+
     return NextResponse.json(createdMessage.data, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {

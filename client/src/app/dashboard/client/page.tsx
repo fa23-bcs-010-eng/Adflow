@@ -18,6 +18,10 @@ import {
   ShieldCheck,
   ShoppingBag,
   Store,
+  Star,
+  Rocket,
+  Siren,
+  SearchCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
@@ -35,11 +39,14 @@ export default function ClientDashboard() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [buyingOrders, setBuyingOrders] = useState<any[]>([]);
   const [sellingOrders, setSellingOrders] = useState<any[]>([]);
+  const [sellerAnalytics, setSellerAnalytics] = useState<any>({ summary: {}, listings: [] });
+  const [promotions, setPromotions] = useState<any[]>([]);
   const [tab, setTab] = useState<ClientTab>('ads');
   const [loading, setLoading] = useState(true);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [reviewDrafts, setReviewDrafts] = useState<Record<string, { rating: number; title: string; body: string }>>({});
 
   const [form, setForm] = useState({
     title: '',
@@ -81,12 +88,16 @@ export default function ClientDashboard() {
       api.get('/client/notifications'),
       api.get('/client/orders?mode=buying'),
       api.get('/client/orders?mode=selling'),
+      api.get('/client/analytics'),
+      api.get('/client/promotions'),
     ])
-      .then(([a, n, buying, selling]) => {
+      .then(([a, n, buying, selling, analyticsRes, promotionsRes]) => {
         setAds(a.status === 'fulfilled' ? a.value.data : []);
         setNotifications(n.status === 'fulfilled' ? n.value.data : []);
         setBuyingOrders(buying.status === 'fulfilled' ? buying.value.data : []);
         setSellingOrders(selling.status === 'fulfilled' ? selling.value.data : []);
+        setSellerAnalytics(analyticsRes.status === 'fulfilled' ? analyticsRes.value.data : { summary: {}, listings: [] });
+        setPromotions(promotionsRes.status === 'fulfilled' ? promotionsRes.value.data : []);
         setOrdersLoading(false);
         setSettings((prev) => ({
           ...prev,
@@ -99,6 +110,8 @@ export default function ClientDashboard() {
         setNotifications([]);
         setBuyingOrders([]);
         setSellingOrders([]);
+        setSellerAnalytics({ summary: {}, listings: [] });
+        setPromotions([]);
         setOrdersLoading(false);
       })
       .finally(() => setLoading(false));
@@ -191,6 +204,68 @@ export default function ClientDashboard() {
     }
   };
 
+  const handlePromotion = async (adId: string, promotionType: 'boost' | 'urgent' | 'top_search') => {
+    try {
+      const { data } = await api.post('/client/promotions', { ad_id: adId, promotion_type: promotionType });
+      setPromotions((prev) => [data, ...prev]);
+      setAds((prev) =>
+        prev.map((ad) =>
+          ad.id === adId
+            ? {
+                ...ad,
+                is_featured: promotionType === 'top_search' ? true : ad.is_featured,
+              }
+            : ad
+        )
+      );
+      toast.success(`${promotionType.replace('_', ' ')} enabled`);
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to activate promotion'));
+    }
+  };
+
+  const handleSellerOrderStatus = async (orderId: string, status: 'confirmed' | 'processing' | 'shipped' | 'delivered') => {
+    try {
+      await api.patch(`/client/orders/${orderId}/status`, { status });
+      setSellingOrders((prev) =>
+        prev.map((item) =>
+          item.order_id === orderId
+            ? { ...item, orders: { ...item.orders, status } }
+            : item
+        )
+      );
+      toast.success(`Order marked ${status}`);
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to update order status'));
+    }
+  };
+
+  const handleSubmitReview = async (orderId: string, item: any) => {
+    const draft = reviewDrafts[orderId];
+    if (!draft || !draft.rating) {
+      toast.error('Please select rating first.');
+      return;
+    }
+    try {
+      await api.post('/reviews', {
+        order_id: orderId,
+        ad_id: item.ad_id,
+        seller_id: item.seller_id,
+        rating: draft.rating,
+        title: draft.title,
+        body: draft.body,
+      });
+      toast.success('Review submitted');
+      setReviewDrafts((prev) => {
+        const next = { ...prev };
+        delete next[orderId];
+        return next;
+      });
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to submit review'));
+    }
+  };
+
   const addMedia = () => setForm((f) => ({ ...f, media: [...f.media, { media_url: '', media_type: 'image' }] }));
   const removeMedia = (i: number) => setForm((f) => ({ ...f, media: f.media.filter((_, idx) => idx !== i) }));
   const updateMedia = (i: number, field: string, val: string) =>
@@ -277,23 +352,23 @@ export default function ClientDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="kpi-card">
                     <p className="text-xs text-slate-300/60 mb-1">Published</p>
-                    <p className="text-3xl font-black text-white">{stats.published}</p>
+                    <p className="text-3xl font-black text-white">{sellerAnalytics.summary?.published_ads || stats.published}</p>
                     <p className="status-up mt-3 inline-flex">+12.4%</p>
                   </div>
                   <div className="kpi-card">
-                    <p className="text-xs text-slate-300/60 mb-1">Pending Payments</p>
-                    <p className="text-3xl font-black text-amber-300">{stats.pendingPayments}</p>
-                    <p className="status-warn mt-3 inline-flex">Needs review</p>
+                    <p className="text-xs text-slate-300/60 mb-1">Chats</p>
+                    <p className="text-3xl font-black text-amber-300">{sellerAnalytics.summary?.total_chats || 0}</p>
+                    <p className="status-warn mt-3 inline-flex">Buyer interest</p>
                   </div>
                   <div className="kpi-card">
-                    <p className="text-xs text-slate-300/60 mb-1">Notifications</p>
-                    <p className="text-3xl font-black text-white">{notifications.length}</p>
-                    <p className="status-up mt-3 inline-flex">Real-time</p>
+                    <p className="text-xs text-slate-300/60 mb-1">Cart Adds</p>
+                    <p className="text-3xl font-black text-white">{sellerAnalytics.summary?.total_cart_adds || 0}</p>
+                    <p className="status-up mt-3 inline-flex">Intent signal</p>
                   </div>
                   <div className="kpi-card">
-                    <p className="text-xs text-slate-300/60 mb-1">Est. ROI</p>
-                    <p className="text-3xl font-black text-cyan-300">4.8x</p>
-                    <p className="status-up mt-3 inline-flex">Campaign lift</p>
+                    <p className="text-xs text-slate-300/60 mb-1">Purchases</p>
+                    <p className="text-3xl font-black text-cyan-300">{sellerAnalytics.summary?.total_purchases || 0}</p>
+                    <p className="status-up mt-3 inline-flex">Revenue events</p>
                   </div>
                 </div>
 
@@ -319,16 +394,16 @@ export default function ClientDashboard() {
                   <div className="chart-box p-5">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <p className="panel-title">Performance Summary</p>
-                        <p className="text-sm text-slate-400">Where your budget is going</p>
+                        <p className="panel-title">Marketplace Performance</p>
+                        <p className="text-sm text-slate-400">Views, reviews, and revenue quality</p>
                       </div>
                       <ChartColumn size={16} className="text-cyan-300" />
                     </div>
                     <div className="space-y-4">
                       {[
-                        ['Campaigns', 40],
-                        ['Optimization', 30],
-                        ['Billing', 20],
+                        ['Views', Math.min(Math.max(Number(sellerAnalytics.summary?.total_views || 0), 8), 100)],
+                        ['Purchases', Math.min(Math.max(Number(sellerAnalytics.summary?.total_purchases || 0) * 10, 6), 100)],
+                        ['Reviews', Math.min(Math.max(Number(sellerAnalytics.summary?.average_rating || 0) * 18, 6), 100)],
                       ].map(([label, value]) => (
                         <div key={String(label)}>
                           <div className="flex items-center justify-between text-sm mb-2">
@@ -341,6 +416,49 @@ export default function ClientDashboard() {
                         </div>
                       ))}
                     </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="kpi-card">
+                    <p className="text-xs text-slate-300/60 mb-1">Revenue</p>
+                    <p className="text-3xl font-black text-emerald-300">PKR {Number(sellerAnalytics.summary?.total_revenue || 0).toLocaleString()}</p>
+                  </div>
+                  <div className="kpi-card">
+                    <p className="text-xs text-slate-300/60 mb-1">Average Rating</p>
+                    <p className="text-3xl font-black text-white">{Number(sellerAnalytics.summary?.average_rating || 0).toFixed(1)}</p>
+                  </div>
+                  <div className="kpi-card">
+                    <p className="text-xs text-slate-300/60 mb-1">Reviews</p>
+                    <p className="text-3xl font-black text-white">{sellerAnalytics.summary?.total_reviews || 0}</p>
+                  </div>
+                  <div className="kpi-card">
+                    <p className="text-xs text-slate-300/60 mb-1">Active Promotions</p>
+                    <p className="text-3xl font-black text-cyan-300">{promotions.filter((item) => item.status === 'active').length}</p>
+                  </div>
+                </div>
+
+                <div className="card p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="panel-title text-lg">Top Listing Performance</h2>
+                    <span className="text-xs text-slate-400">Views, chats, carts, purchases</span>
+                  </div>
+                  <div className="space-y-3">
+                    {(sellerAnalytics.listings || []).slice(0, 6).map((listing: any) => (
+                      <div key={listing.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                        <div className="flex items-center justify-between gap-3 mb-2">
+                          <p className="text-sm font-semibold text-white">{listing.title}</p>
+                          <StatusBadge status={listing.status} />
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs text-slate-300/75">
+                          <span>Views: {listing.analytics?.views || 0}</span>
+                          <span>Chats: {listing.analytics?.chats || 0}</span>
+                          <span>Cart Adds: {listing.analytics?.cart_adds || 0}</span>
+                          <span>Purchases: {listing.analytics?.purchases || 0}</span>
+                          <span>Revenue: PKR {Number(listing.analytics?.revenue || 0).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -383,9 +501,20 @@ export default function ClientDashboard() {
                                   </Link>
                                 )}
                                 {ad.status === 'published' && ad.slug && (
-                                  <Link href={`/ads/${ad.slug}`} className="text-cyan-300 hover:underline text-xs">
-                                    View
-                                  </Link>
+                                  <>
+                                    <Link href={`/ads/${ad.slug}`} className="text-cyan-300 hover:underline text-xs">
+                                      View
+                                    </Link>
+                                    <button onClick={() => handlePromotion(ad.id, 'boost')} className="btn-secondary text-xs !py-1.5 !px-2.5 inline-flex items-center gap-1">
+                                      <Rocket size={11} /> Boost
+                                    </button>
+                                    <button onClick={() => handlePromotion(ad.id, 'urgent')} className="btn-secondary text-xs !py-1.5 !px-2.5 inline-flex items-center gap-1">
+                                      <Siren size={11} /> Urgent
+                                    </button>
+                                    <button onClick={() => handlePromotion(ad.id, 'top_search')} className="btn-secondary text-xs !py-1.5 !px-2.5 inline-flex items-center gap-1">
+                                      <SearchCheck size={11} /> Top Search
+                                    </button>
+                                  </>
                                 )}
                               </div>
                             </td>
@@ -530,6 +659,40 @@ export default function ClientDashboard() {
                               Total: PKR {Number(order.total_amount || 0).toLocaleString()} | Items: {(order.items || []).length}
                             </p>
                             <p className="text-xs text-slate-500 mt-1">{new Date(order.created_at).toLocaleString()}</p>
+                            {String(order.status) === 'delivered' && (order.items || []).slice(0, 1).map((item: any) => (
+                              <div key={item.id} className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3">
+                                <div className="flex items-center gap-2 mb-2 text-sm text-white">
+                                  <Star size={14} className="text-amber-300" /> Leave seller review
+                                </div>
+                                <div className="grid grid-cols-5 gap-2 mb-2">
+                                  {[1, 2, 3, 4, 5].map((rating) => (
+                                    <button
+                                      key={rating}
+                                      type="button"
+                                      onClick={() => setReviewDrafts((prev) => ({ ...prev, [order.id]: { ...(prev[order.id] || { title: '', body: '', rating: 0 }), rating } }))}
+                                      className={`rounded-lg border px-2 py-1 text-xs ${reviewDrafts[order.id]?.rating === rating ? 'border-amber-300 text-amber-200 bg-amber-400/10' : 'border-white/10 text-slate-300'}`}
+                                    >
+                                      {rating} Star
+                                    </button>
+                                  ))}
+                                </div>
+                                <input
+                                  className="input mb-2"
+                                  placeholder="Review title"
+                                  value={reviewDrafts[order.id]?.title || ''}
+                                  onChange={(e) => setReviewDrafts((prev) => ({ ...prev, [order.id]: { ...(prev[order.id] || { body: '', rating: 0, title: '' }), title: e.target.value } }))}
+                                />
+                                <textarea
+                                  className="input h-20 resize-none"
+                                  placeholder="Share your experience with the seller"
+                                  value={reviewDrafts[order.id]?.body || ''}
+                                  onChange={(e) => setReviewDrafts((prev) => ({ ...prev, [order.id]: { ...(prev[order.id] || { title: '', rating: 0, body: '' }), body: e.target.value } }))}
+                                />
+                                <button onClick={() => handleSubmitReview(order.id, item)} className="btn-primary mt-2 text-xs">
+                                  Submit Review
+                                </button>
+                              </div>
+                            ))}
                           </div>
                         ))}
                       </div>
@@ -555,7 +718,25 @@ export default function ClientDashboard() {
                             <p className="text-xs text-slate-400">
                               Buyer: {item.buyer?.full_name || item.buyer?.email || 'Unknown'} | PKR {Number(item.total_price || 0).toLocaleString()}
                             </p>
+                            <p className="text-xs text-cyan-300 mt-1 capitalize">Status: {item.orders?.status || 'placed'}</p>
                             <p className="text-xs text-slate-500 mt-1">{new Date(item.created_at).toLocaleString()}</p>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                              {['placed', 'confirmed'].includes(String(item.orders?.status || 'placed')) && (
+                                <button onClick={() => handleSellerOrderStatus(item.order_id, 'confirmed')} className="btn-secondary text-xs">
+                                  Confirm
+                                </button>
+                              )}
+                              {['confirmed', 'processing'].includes(String(item.orders?.status || 'placed')) && (
+                                <button onClick={() => handleSellerOrderStatus(item.order_id, 'shipped')} className="btn-secondary text-xs">
+                                  Mark Shipped
+                                </button>
+                              )}
+                              {String(item.orders?.status || 'placed') === 'shipped' && (
+                                <button onClick={() => handleSellerOrderStatus(item.order_id, 'delivered')} className="btn-primary text-xs">
+                                  Mark Delivered
+                                </button>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>

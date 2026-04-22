@@ -29,7 +29,7 @@ export default function CategoriesPage() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {categories.map((c) => (
-            <Link key={c.id} href={`/explore?category=${c.slug}`}
+            <Link key={c.id} href={`/marketplace/all/${c.slug}`}
               className="card p-6 flex flex-col items-center justify-center text-center hover:border-violet-500 transition-all hover:-translate-y-1">
               <span className="text-4xl mb-3">{c.icon}</span>
               <h2 className="text-white font-medium">{c.name}</h2>

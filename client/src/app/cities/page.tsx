@@ -30,7 +30,7 @@ export default function CitiesPage() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {cities.map((c) => (
-            <Link key={c.id} href={`/explore?city=${c.slug}`}
+            <Link key={c.id} href={`/marketplace/${c.slug}/all`}
               className="card p-6 flex items-center justify-center gap-2 hover:border-violet-500 transition-all hover:-translate-y-1">
               <MapPin className="text-violet-400" size={20} />
               <h2 className="text-white font-medium">{c.name}</h2>

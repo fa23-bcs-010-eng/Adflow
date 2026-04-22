@@ -70,6 +70,7 @@ graph TD
 ### 🛍️ Client & User Experience
 - **Smart Ad Discovery**: Browse, filter, and search for ads categorized by specific niches and cities.
 - **Buy & Sell Marketplace Flow**: Buyers can open ad details, add to cart, and place orders. Sellers can publish ads and track incoming orders.
+- **Business Growth Layer**: Seller reviews, conversion analytics, complaint handling, promotions, and SEO marketplace pages now support real marketplace growth workflows.
 - **Dynamic Checkout Flow**: Tab-based payment gateway supporting multiple methodologies (Credit/Debit, Bank transfer, Mobile Wallet).
 - **Premium Packages**: Users can upgrade their ad visibility by purchasing standardized or premium packages.
 - **Client Dashboard**: Manage profiles, view ad metrics, track payments, and follow up on submitted ad statuses.
@@ -231,6 +232,22 @@ This creates:
 - `order_status_history`
 
 After migration, buyers can place orders from `/checkout` and sellers can review incoming product orders in the client dashboard Orders tab.
+
+---
+
+## Phase 2 Business Features Setup
+
+To enable reviews, analytics events, complaint moderation, promotions, and SEO growth pages, run:
+
+- `db/phase2_business_growth.sql`
+
+This creates:
+- `seller_reviews`
+- `ad_reports`
+- `ad_promotions`
+- `ad_analytics_events`
+
+After migration, sellers can boost listings, buyers can submit reviews after delivery, moderators can process reports, and analytics will track views, chats, cart adds, and purchases.
 
 ---
 

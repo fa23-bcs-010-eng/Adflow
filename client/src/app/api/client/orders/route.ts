@@ -231,6 +231,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const purchaseEvents = orderItemsPayload
+      .filter((item) => item.ad_id && item.seller_id)
+      .map((item) => ({
+        ad_id: item.ad_id,
+        user_id: user.id,
+        seller_id: item.seller_id,
+        event_type: 'purchase',
+        meta: {
+          order_id: orderId,
+          quantity: item.quantity,
+          total_price: item.total_price,
+        },
+      }));
+
+    if (purchaseEvents.length > 0) {
+      await supabaseAdmin.from('ad_analytics_events').insert(purchaseEvents);
+    }
+
     await supabaseAdmin.from('notifications').insert({
       user_id: user.id,
       title: 'Order placed successfully',
