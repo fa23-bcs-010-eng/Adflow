@@ -13,6 +13,9 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth';
+import toast from 'react-hot-toast';
 
 type AdDetails = {
   id: string;
@@ -39,9 +42,22 @@ type AdDetails = {
 
 export default function AdDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
+  const router = useRouter();
+  const { user } = useAuth();
   const [ad, setAd] = useState<AdDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
+
+  const requireLoginBeforeContact = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    if (user) return;
+    event.preventDefault();
+    toast.error('Please login first, then you can contact the owner.');
+    const redirect = encodeURIComponent(`/ads/${slug}`);
+    router.push(`/auth/login?next=${redirect}&contact=${encodeURIComponent(href)}`);
+  };
 
   useEffect(() => {
     const run = async () => {
@@ -191,6 +207,12 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
               {(ad.contact_phone || ad.contact_whatsapp) && (
                 <a
                   href={`tel:${ad.contact_phone || ad.contact_whatsapp}`}
+                  onClick={(e) =>
+                    requireLoginBeforeContact(
+                      e,
+                      `tel:${ad.contact_phone || ad.contact_whatsapp}`
+                    )
+                  }
                   className="flex items-center gap-2 text-sm text-gray-300 hover:text-violet-400 transition"
                 >
                   <PhoneCall size={14} /> {ad.contact_phone || ad.contact_whatsapp}
@@ -199,6 +221,12 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
               {(ad.contact_email || ad.seller?.email) && (
                 <a
                   href={`mailto:${ad.contact_email || ad.seller?.email}`}
+                  onClick={(e) =>
+                    requireLoginBeforeContact(
+                      e,
+                      `mailto:${ad.contact_email || ad.seller?.email}`
+                    )
+                  }
                   className="flex items-center gap-2 text-sm text-gray-300 hover:text-violet-400 transition"
                 >
                   <Mail size={14} /> {ad.contact_email || ad.seller?.email}
@@ -209,6 +237,9 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
                   href={`https://wa.me/${ad.contact_whatsapp}`}
                   target="_blank"
                   rel="noreferrer"
+                  onClick={(e) =>
+                    requireLoginBeforeContact(e, `https://wa.me/${ad.contact_whatsapp}`)
+                  }
                   className="flex items-center gap-2 text-sm text-green-400 hover:text-green-300 transition"
                 >
                   <MessageCircle size={14} /> WhatsApp Chat
