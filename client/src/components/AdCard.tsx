@@ -76,6 +76,12 @@ export default function AdCard({ ad, showStatus = false }: { ad: Ad; showStatus?
           </p>
         )}
 
+        {ad.description && (
+          <p className="text-xs text-gray-400 leading-relaxed line-clamp-2 mb-2">
+            {ad.description}
+          </p>
+        )}
+
         <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
           {ad.category && (
             <span className="flex items-center gap-1">
@@ -90,6 +96,11 @@ export default function AdCard({ ad, showStatus = false }: { ad: Ad; showStatus?
           {ad.view_count !== undefined && (
             <span className="flex items-center gap-1 ml-auto">
               <Eye size={10} /> {ad.view_count}
+            </span>
+          )}
+          {ad.published_at && (
+            <span className="flex items-center gap-1">
+              <Clock size={10} /> {new Date(ad.published_at).toLocaleDateString()}
             </span>
           )}
         </div>

@@ -13,109 +13,6 @@ const HERO_FEATURES = [
   { icon: Zap, label: 'Instant Exposure' },
 ];
 
-const FEATURED_FALLBACK_ADS = [
-  {
-    id: 'fallback-featured-1',
-    slug: 'premium-smart-watch-ad',
-    title: 'Premium Smart Watch 48mm - AMOLED Display',
-    price: 54999,
-    is_featured: true,
-    view_count: 124,
-    category: { name: 'Wearables', slug: 'wearables' },
-    city: { name: 'Karachi', slug: 'karachi' },
-    package: { name: 'Premium', featured_scope: 'homepage' },
-    media: [{ media_url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80', is_primary: true }],
-  },
-  {
-    id: 'fallback-featured-2',
-    slug: 'iphone-15-pro-max-ad',
-    title: 'iPhone 15 Pro Max 256GB Deep Blue',
-    price: 329999,
-    is_featured: true,
-    view_count: 207,
-    category: { name: 'Mobiles', slug: 'mobiles' },
-    city: { name: 'Lahore', slug: 'lahore' },
-    package: { name: 'Standard', featured_scope: 'homepage' },
-    media: [{ media_url: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=1200&q=80', is_primary: true }],
-  },
-  {
-    id: 'fallback-featured-3',
-    slug: 'sony-camera-alpha-ad',
-    title: 'Sony Mirrorless Camera Alpha Series',
-    price: 184999,
-    is_featured: true,
-    view_count: 91,
-    category: { name: 'Electronics', slug: 'electronics' },
-    city: { name: 'Islamabad', slug: 'islamabad' },
-    package: { name: 'Premium', featured_scope: 'homepage' },
-    media: [{ media_url: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80', is_primary: true }],
-  },
-  {
-    id: 'fallback-featured-4',
-    slug: 'macbook-pro-m3-ad',
-    title: 'MacBook Pro M3 16-inch 18GB RAM',
-    price: 489999,
-    is_featured: true,
-    view_count: 142,
-    category: { name: 'Laptops', slug: 'laptops' },
-    city: { name: 'Rawalpindi', slug: 'rawalpindi' },
-    package: { name: 'Premium', featured_scope: 'homepage' },
-    media: [{ media_url: 'https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1200', is_primary: true }],
-  },
-];
-
-const RECENT_FALLBACK_ADS = [
-  ...FEATURED_FALLBACK_ADS,
-  {
-    id: 'fallback-recent-5',
-    slug: 'yamaha-ybr-125-ad',
-    title: 'Yamaha YBR 125 2022 Model - Excellent Condition',
-    price: 419000,
-    is_featured: false,
-    view_count: 76,
-    category: { name: 'Vehicles', slug: 'vehicles' },
-    city: { name: 'Peshawar', slug: 'peshawar' },
-    package: { name: 'Standard' },
-    media: [{ media_url: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=1200&q=80', is_primary: true }],
-  },
-  {
-    id: 'fallback-recent-6',
-    slug: 'airpods-max-original-ad',
-    title: 'AirPods Max Original - Noise Canceling',
-    price: 139999,
-    is_featured: false,
-    view_count: 58,
-    category: { name: 'Accessories', slug: 'accessories' },
-    city: { name: 'Faisalabad', slug: 'faisalabad' },
-    package: { name: 'Basic' },
-    media: [{ media_url: 'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?auto=format&fit=crop&w=1200&q=80', is_primary: true }],
-  },
-  {
-    id: 'fallback-recent-7',
-    slug: 'iphone-15-pro-max-ad-recent',
-    title: 'iPhone 15 Pro Max PTA Approved - Slightly Used',
-    price: 314999,
-    is_featured: false,
-    view_count: 86,
-    category: { name: 'Mobiles', slug: 'mobiles' },
-    city: { name: 'Multan', slug: 'multan' },
-    package: { name: 'Standard' },
-    media: [{ media_url: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=1200&q=80', is_primary: true }],
-  },
-  {
-    id: 'fallback-recent-8',
-    slug: 'smart-watch-48mm-ad-recent',
-    title: 'Smart Watch 48mm GPS Edition - Brand New',
-    price: 47999,
-    is_featured: false,
-    view_count: 39,
-    category: { name: 'Wearables', slug: 'wearables' },
-    city: { name: 'Hyderabad', slug: 'hyderabad' },
-    package: { name: 'Basic' },
-    media: [{ media_url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80', is_primary: true }],
-  },
-];
-
 const PACKAGE_FALLBACKS = [
   { id: 'pkg-basic', name: 'Basic', price: 0, description: 'Start with essential visibility for a single ad.' },
   { id: 'pkg-standard', name: 'Standard', price: 49, description: 'Get longer visibility and stronger placement.' },
@@ -129,23 +26,21 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
+    Promise.allSettled([
       api.get('/featured'),
       api.get('/ads?limit=8'),
       api.get('/packages'),
-    ]).then(([f, r, p]) => {
-      setFeatured(f.data);
-      setRecent(r.data);
-      setPackages(p.data);
-    }).catch(() => {
-      setFeatured(FEATURED_FALLBACK_ADS);
-      setRecent(RECENT_FALLBACK_ADS);
-      setPackages(PACKAGE_FALLBACKS);
-    }).finally(() => setLoading(false));
+    ])
+      .then(([f, r, p]) => {
+        setFeatured(f.status === 'fulfilled' ? (f.value.data ?? []) : []);
+        setRecent(r.status === 'fulfilled' ? (r.value.data ?? []) : []);
+        setPackages(p.status === 'fulfilled' ? (p.value.data ?? []) : PACKAGE_FALLBACKS);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  const displayFeatured = featured.length > 0 ? featured : FEATURED_FALLBACK_ADS;
-  const displayRecent = recent.length > 0 ? recent : RECENT_FALLBACK_ADS;
+  const displayFeatured = featured;
+  const displayRecent = recent;
 
   return (
     <div>
@@ -372,7 +267,13 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {displayFeatured.map(ad => <AdCard key={ad.id} ad={ad} />)}
+            {displayFeatured.length > 0 ? (
+              displayFeatured.map(ad => <AdCard key={ad.id} ad={ad} />)
+            ) : (
+              <div className="col-span-full rounded-2xl border border-cyan-500/30 bg-cyan-500/5 p-5 text-center text-sm text-cyan-200">
+                No featured ads found right now. Publish and verify ads to show real products here.
+              </div>
+            )}
           </div>
         )}
       </section>
@@ -397,7 +298,13 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {displayRecent.map(ad => <AdCard key={ad.id} ad={ad} />)}
+            {displayRecent.length > 0 ? (
+              displayRecent.map(ad => <AdCard key={ad.id} ad={ad} />)
+            ) : (
+              <div className="col-span-full rounded-2xl border border-cyan-500/30 bg-cyan-500/5 p-5 text-center text-sm text-cyan-200">
+                No recent listings are available yet. Add your first real product to get started.
+              </div>
+            )}
           </div>
         )}
       </section>
