@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Menu, X, Zap, Bell, ChevronDown, LogOut, LayoutDashboard, SunMedium, MoonStar } from 'lucide-react';
+import { Menu, X, Zap, Bell, ChevronDown, LogOut, LayoutDashboard, SunMedium, MoonStar, ShoppingCart } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { useCart } from '@/lib/cart';
 import { useRouter } from 'next/navigation';
 
 const NAV = [
@@ -15,6 +16,7 @@ const NAV = [
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { itemCount } = useCart();
   const [open, setOpen] = useState(false);
   const [dropOpen, setDropOpen] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -73,6 +75,18 @@ export default function Navbar() {
 
           {/* Right */}
           <div className="hidden md:flex items-center gap-6">
+            <Link
+              href="/checkout"
+              className="relative inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/10 bg-white/5 text-slate-200 hover:border-cyan-400 hover:bg-white/10 transition"
+              aria-label="Open cart"
+            >
+              <ShoppingCart size={16} />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-cyan-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
             <button
               type="button"
               onClick={handleThemeToggle}
@@ -134,6 +148,9 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {open && (
         <div className="md:hidden border-t border-white/10 bg-[#070d1d] px-4 py-3 flex flex-col gap-1">
+          <Link href="/checkout" onClick={() => setOpen(false)} className="px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition flex items-center gap-2">
+            <ShoppingCart size={14} /> Cart ({itemCount})
+          </Link>
           <button
             type="button"
             onClick={handleThemeToggle}
