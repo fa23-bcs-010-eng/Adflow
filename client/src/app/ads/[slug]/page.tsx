@@ -28,6 +28,7 @@ import { getErrorMessage } from '@/lib/errors';
 type AdDetails = {
   id: string;
   slug: string;
+  user_id?: string;
   title: string;
   description?: string;
   price?: number;
@@ -69,6 +70,14 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
   const [reportReason, setReportReason] = useState('');
   const [reportDetails, setReportDetails] = useState('');
   const [submittingReport, setSubmittingReport] = useState(false);
+  const [offerPrice, setOfferPrice] = useState('');
+  const [offerNote, setOfferNote] = useState('');
+  const [submittingOffer, setSubmittingOffer] = useState(false);
+  const [myOffer, setMyOffer] = useState<any | null>(null);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [sendingChat, setSendingChat] = useState(false);
 
   const requireLoginBeforeContact = (
     event: React.MouseEvent<HTMLAnchorElement>,
@@ -130,6 +139,34 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
     run();
   }, [slug]);
 
+  useEffect(() => {
+    const loadNegotiation = async () => {
+      if (!ad?.id || !user || user.id === ad.user_id || String(ad.id).startsWith('demo-')) return;
+      setChatLoading(true);
+      try {
+        const [chatRes, sentOffersRes] = await Promise.allSettled([
+          api.get(`/client/chat?ad_id=${ad.id}`),
+          api.get('/client/offers?mode=sent'),
+        ]);
+
+        if (chatRes.status === 'fulfilled') {
+          setChatMessages(chatRes.value.data?.messages || []);
+        }
+        if (sentOffersRes.status === 'fulfilled') {
+          const offers = Array.isArray(sentOffersRes.value.data) ? sentOffersRes.value.data : [];
+          const latest = offers.find((item: any) => item.ad_id === ad.id) || null;
+          setMyOffer(latest);
+        }
+      } catch {
+        // Keep page responsive even if negotiation API fails.
+      } finally {
+        setChatLoading(false);
+      }
+    };
+
+    loadNegotiation();
+  }, [ad?.id, ad?.user_id, user?.id]);
+
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12">
@@ -154,6 +191,8 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
   const media = ad.media || [];
   const current = media[activeImg]?.media_url;
   const primaryImage = media.find((m) => m.is_primary)?.media_url || media[0]?.media_url;
+  const isOwnAd = Boolean(user?.id && ad?.user_id && user.id === ad.user_id);
+  const isDemoAd = String(ad?.id || '').startsWith('demo-');
 
   const handleAddToCart = () => {
     if (!ensureLoggedInForPurchase()) return;
@@ -205,6 +244,65 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
       toast.error(getErrorMessage(error, 'Failed to submit report'));
     } finally {
       setSubmittingReport(false);
+    }
+  };
+
+  const handleMakeOffer = async () => {
+    if (!user) {
+      toast.error('Please login first to make an offer.');
+      router.push(`/auth/login?next=${encodeURIComponent(`/ads/${slug}`)}`);
+      return;
+    }
+    if (!ad?.id || String(ad.id).startsWith('demo-')) {
+      toast.error('Offers are available on live published listings.');
+      return;
+    }
+    const offered = Number(offerPrice);
+    if (!offered || offered <= 0) {
+      toast.error('Please enter a valid offer price.');
+      return;
+    }
+
+    setSubmittingOffer(true);
+    try {
+      const { data } = await api.post('/client/offers', {
+        ad_id: ad.id,
+        offered_price: offered,
+        note: offerNote,
+      });
+      setMyOffer(data);
+      toast.success('Offer submitted to seller');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to submit offer'));
+    } finally {
+      setSubmittingOffer(false);
+    }
+  };
+
+  const handleSendChat = async () => {
+    if (!user) {
+      toast.error('Please login first to send a message.');
+      router.push(`/auth/login?next=${encodeURIComponent(`/ads/${slug}`)}`);
+      return;
+    }
+    if (!ad?.id || String(ad.id).startsWith('demo-')) {
+      toast.error('Chat is available on live published listings.');
+      return;
+    }
+    const message = chatInput.trim();
+    if (!message) return;
+
+    setSendingChat(true);
+    try {
+      await api.post('/client/chat', { ad_id: ad.id, message });
+      const { data } = await api.get(`/client/chat?ad_id=${ad.id}`);
+      setChatMessages(data?.messages || []);
+      setChatInput('');
+      toast.success('Message sent');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to send message'));
+    } finally {
+      setSendingChat(false);
     }
   };
 
@@ -421,6 +519,74 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
                 </span>
               </p>
             </div>
+          </div>
+
+          <div className="card p-4 space-y-3">
+            <p className="text-sm font-semibold text-gray-300">Negotiation & Chat</p>
+            {!user ? (
+              <p className="text-sm text-slate-400">Login first to make offers and chat with owner.</p>
+            ) : isOwnAd ? (
+              <p className="text-sm text-slate-400">This is your own ad. Buyer negotiation tools are hidden.</p>
+            ) : isDemoAd ? (
+              <p className="text-sm text-slate-400">Demo listing: offer/chat actions are disabled.</p>
+            ) : (
+              <>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-3 space-y-2">
+                  <p className="text-xs text-slate-400">Make Offer</p>
+                  <input
+                    className="input"
+                    type="number"
+                    placeholder="Offer amount (PKR)"
+                    value={offerPrice}
+                    onChange={(e) => setOfferPrice(e.target.value)}
+                  />
+                  <textarea
+                    className="input h-20 resize-none"
+                    placeholder="Optional note for seller"
+                    value={offerNote}
+                    onChange={(e) => setOfferNote(e.target.value)}
+                  />
+                  <button onClick={handleMakeOffer} disabled={submittingOffer} className="btn-primary text-xs w-full">
+                    {submittingOffer ? 'Submitting...' : 'Submit Offer'}
+                  </button>
+                  {myOffer && (
+                    <p className="text-xs text-cyan-300 capitalize">
+                      Latest offer status: {myOffer.status}
+                      {myOffer.counter_price ? ` | Counter: PKR ${Number(myOffer.counter_price).toLocaleString()}` : ''}
+                    </p>
+                  )}
+                </div>
+
+                <div className="rounded-xl border border-white/10 bg-white/5 p-3 space-y-2">
+                  <p className="text-xs text-slate-400">In-app Chat</p>
+                  <div className="max-h-44 overflow-auto space-y-2 pr-1">
+                    {chatLoading ? (
+                      <p className="text-xs text-slate-400">Loading chat...</p>
+                    ) : chatMessages.length === 0 ? (
+                      <p className="text-xs text-slate-400">No messages yet. Start conversation with seller.</p>
+                    ) : (
+                      chatMessages.slice(-20).map((msg) => (
+                        <div key={msg.id} className="rounded-lg border border-white/10 bg-slate-900/40 p-2">
+                          <p className="text-xs text-slate-200">{msg.body}</p>
+                          <p className="text-[10px] text-slate-500 mt-1">
+                            {msg.sender?.full_name || msg.sender?.email || 'User'} | {new Date(msg.created_at).toLocaleString()}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <textarea
+                    className="input h-20 resize-none"
+                    placeholder="Write your message..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                  />
+                  <button onClick={handleSendChat} disabled={sendingChat} className="btn-secondary text-xs w-full">
+                    {sendingChat ? 'Sending...' : 'Send Message'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

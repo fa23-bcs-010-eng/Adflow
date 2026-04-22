@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Megaphone,
   Users,
+  MessageSquare,
   ChartColumn,
   Settings,
   CreditCard,
@@ -33,7 +34,7 @@ import { useAuth } from '@/lib/auth';
 import StatusBadge from '@/components/StatusBadge';
 import toast from 'react-hot-toast';
 
-type ClientTab = 'ads' | 'create' | 'notifications' | 'analytics' | 'settings' | 'billing' | 'orders';
+type ClientTab = 'ads' | 'create' | 'notifications' | 'analytics' | 'settings' | 'billing' | 'orders' | 'offers';
 
 export default function ClientDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -42,6 +43,9 @@ export default function ClientDashboard() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [buyingOrders, setBuyingOrders] = useState<any[]>([]);
   const [sellingOrders, setSellingOrders] = useState<any[]>([]);
+  const [sentOffers, setSentOffers] = useState<any[]>([]);
+  const [receivedOffers, setReceivedOffers] = useState<any[]>([]);
+  const [counterDrafts, setCounterDrafts] = useState<Record<string, string>>({});
   const [sellerAnalytics, setSellerAnalytics] = useState<any>({ summary: {}, listings: [] });
   const [promotions, setPromotions] = useState<any[]>([]);
   const [listingInsight, setListingInsight] = useState<any>(null);
@@ -83,7 +87,7 @@ export default function ClientDashboard() {
     if (typeof window === 'undefined') return;
     const tabParam = new URLSearchParams(window.location.search).get('tab');
     if (!tabParam) return;
-    if (['ads', 'create', 'notifications', 'analytics', 'settings', 'billing', 'orders'].includes(tabParam)) {
+    if (['ads', 'create', 'notifications', 'analytics', 'settings', 'billing', 'orders', 'offers'].includes(tabParam)) {
       setTab(tabParam as ClientTab);
     }
   }, []);
@@ -95,14 +99,18 @@ export default function ClientDashboard() {
       api.get('/client/notifications'),
       api.get('/client/orders?mode=buying'),
       api.get('/client/orders?mode=selling'),
+      api.get('/client/offers?mode=sent'),
+      api.get('/client/offers?mode=received'),
       api.get('/client/analytics'),
       api.get('/client/promotions'),
     ])
-      .then(([a, n, buying, selling, analyticsRes, promotionsRes]) => {
+      .then(([a, n, buying, selling, sent, received, analyticsRes, promotionsRes]) => {
         setAds(a.status === 'fulfilled' ? a.value.data : []);
         setNotifications(n.status === 'fulfilled' ? n.value.data : []);
         setBuyingOrders(buying.status === 'fulfilled' ? buying.value.data : []);
         setSellingOrders(selling.status === 'fulfilled' ? selling.value.data : []);
+        setSentOffers(sent.status === 'fulfilled' ? sent.value.data : []);
+        setReceivedOffers(received.status === 'fulfilled' ? received.value.data : []);
         setSellerAnalytics(analyticsRes.status === 'fulfilled' ? analyticsRes.value.data : { summary: {}, listings: [] });
         setPromotions(promotionsRes.status === 'fulfilled' ? promotionsRes.value.data : []);
         setOrdersLoading(false);
@@ -117,6 +125,8 @@ export default function ClientDashboard() {
         setNotifications([]);
         setBuyingOrders([]);
         setSellingOrders([]);
+        setSentOffers([]);
+        setReceivedOffers([]);
         setSellerAnalytics({ summary: {}, listings: [] });
         setPromotions([]);
         setOrdersLoading(false);
@@ -337,6 +347,28 @@ export default function ClientDashboard() {
     }
   };
 
+  const handleOfferAction = async (offerId: string, action: 'accept' | 'reject' | 'counter' | 'withdraw') => {
+    try {
+      const payload: Record<string, any> = { action };
+      if (action === 'counter') {
+        const counterRaw = counterDrafts[offerId];
+        const counterPrice = Number(counterRaw);
+        if (!counterPrice || counterPrice <= 0) {
+          toast.error('Enter a valid counter amount first.');
+          return;
+        }
+        payload.counter_price = counterPrice;
+      }
+
+      const { data } = await api.patch(`/client/offers/${offerId}`, payload);
+      setSentOffers((prev) => prev.map((item) => (item.id === offerId ? { ...item, ...data } : item)));
+      setReceivedOffers((prev) => prev.map((item) => (item.id === offerId ? { ...item, ...data } : item)));
+      toast.success(`Offer ${action}ed`);
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to update offer'));
+    }
+  };
+
   useEffect(() => {
     const deliveredOrders = buyingOrders.filter((order) => String(order.status) === 'delivered');
     deliveredOrders.forEach((order) => {
@@ -366,14 +398,15 @@ export default function ClientDashboard() {
               <p className="text-xs text-slate-300/60">Client Workspace</p>
             </div>
             <div className="space-y-1 text-sm">
-              {[
-                { key: 'ads', icon: LayoutDashboard, label: 'Dashboard' },
-                { key: 'create', icon: Megaphone, label: 'Campaigns' },
-                { key: 'notifications', icon: Users, label: 'Audience' },
-                { key: 'orders', icon: ShoppingBag, label: 'Orders' },
-                { key: 'ads-analytics', icon: ChartColumn, label: 'Analytics' },
-                { key: 'ads-settings', icon: Settings, label: 'Settings' },
-                { key: 'ads-billing', icon: CreditCard, label: 'Billing' },
+                {[
+                  { key: 'ads', icon: LayoutDashboard, label: 'Dashboard' },
+                  { key: 'create', icon: Megaphone, label: 'Campaigns' },
+                  { key: 'notifications', icon: Users, label: 'Audience' },
+                  { key: 'orders', icon: ShoppingBag, label: 'Orders' },
+                  { key: 'offers', icon: MessageSquare, label: 'Offers' },
+                  { key: 'ads-analytics', icon: ChartColumn, label: 'Analytics' },
+                  { key: 'ads-settings', icon: Settings, label: 'Settings' },
+                  { key: 'ads-billing', icon: CreditCard, label: 'Billing' },
               ].map((item) => {
                 const Icon = item.icon;
                 const mappedTab: Record<string, ClientTab> = {
@@ -381,6 +414,7 @@ export default function ClientDashboard() {
                   create: 'create',
                   notifications: 'notifications',
                   orders: 'orders',
+                  offers: 'offers',
                   'ads-analytics': 'analytics',
                   'ads-settings': 'settings',
                   'ads-billing': 'billing',
@@ -889,6 +923,103 @@ export default function ClientDashboard() {
                                 </button>
                               )}
                             </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {tab === 'offers' && (
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="kpi-card">
+                    <p className="text-xs text-slate-300/60 mb-1">Sent Offers</p>
+                    <p className="text-3xl font-black text-white">{sentOffers.length}</p>
+                  </div>
+                  <div className="kpi-card">
+                    <p className="text-xs text-slate-300/60 mb-1">Received Offers</p>
+                    <p className="text-3xl font-black text-cyan-300">{receivedOffers.length}</p>
+                  </div>
+                  <div className="kpi-card">
+                    <p className="text-xs text-slate-300/60 mb-1">Pending</p>
+                    <p className="text-3xl font-black text-amber-300">
+                      {receivedOffers.filter((item) => String(item.status) === 'pending').length}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  <div className="card p-5">
+                    <h2 className="panel-title text-lg mb-4">Offers I Sent</h2>
+                    {sentOffers.length === 0 ? (
+                      <p className="text-slate-400 text-sm">No offers sent yet. Open any ad and use Make Offer.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {sentOffers.slice(0, 10).map((offer) => (
+                          <div key={offer.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                            <p className="text-sm font-semibold text-white">{offer.ad?.title || 'Listing'}</p>
+                            <p className="text-xs text-slate-400 mt-1">
+                              Offered: PKR {Number(offer.offered_price || 0).toLocaleString()}
+                              {offer.counter_price ? ` | Counter: PKR ${Number(offer.counter_price).toLocaleString()}` : ''}
+                            </p>
+                            <p className="text-xs text-cyan-300 mt-1 capitalize">Status: {offer.status}</p>
+                            <p className="text-xs text-slate-500 mt-1">{new Date(offer.created_at).toLocaleString()}</p>
+                            {String(offer.status) === 'pending' && (
+                              <button
+                                onClick={() => handleOfferAction(offer.id, 'withdraw')}
+                                className="btn-secondary text-xs mt-2"
+                              >
+                                Withdraw
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="card p-5">
+                    <h2 className="panel-title text-lg mb-4">Offers On My Ads</h2>
+                    {receivedOffers.length === 0 ? (
+                      <p className="text-slate-400 text-sm">No incoming offers yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {receivedOffers.slice(0, 10).map((offer) => (
+                          <div key={offer.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                            <p className="text-sm font-semibold text-white">{offer.ad?.title || 'Listing'}</p>
+                            <p className="text-xs text-slate-400 mt-1">
+                              Buyer offered PKR {Number(offer.offered_price || 0).toLocaleString()}
+                            </p>
+                            <p className="text-xs text-cyan-300 mt-1 capitalize">Status: {offer.status}</p>
+                            {String(offer.status) === 'pending' && (
+                              <div className="mt-3 space-y-2">
+                                <div className="flex gap-2">
+                                  <button onClick={() => handleOfferAction(offer.id, 'accept')} className="btn-primary text-xs">
+                                    Accept
+                                  </button>
+                                  <button onClick={() => handleOfferAction(offer.id, 'reject')} className="btn-secondary text-xs">
+                                    Reject
+                                  </button>
+                                </div>
+                                <div className="flex gap-2">
+                                  <input
+                                    className="input text-xs"
+                                    placeholder="Counter price"
+                                    type="number"
+                                    value={counterDrafts[offer.id] || ''}
+                                    onChange={(e) =>
+                                      setCounterDrafts((prev) => ({ ...prev, [offer.id]: e.target.value }))
+                                    }
+                                  />
+                                  <button onClick={() => handleOfferAction(offer.id, 'counter')} className="btn-secondary text-xs">
+                                    Counter
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>

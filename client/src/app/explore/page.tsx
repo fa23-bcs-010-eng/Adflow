@@ -5,12 +5,17 @@ import { Search, SlidersHorizontal, MapPin, Layers, Sparkles } from 'lucide-reac
 import api from '@/lib/api';
 import AdCard from '@/components/AdCard';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
+import { useAuth } from '@/lib/auth';
+import { getErrorMessage } from '@/lib/errors';
 
 function ExploreInner() {
+  const { user } = useAuth();
   const [ads, setAds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
   const [cities, setCities] = useState<any[]>([]);
+  const [savedSearches, setSavedSearches] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [selCat, setSelCat] = useState('');
   const [selCity, setSelCity] = useState('');
@@ -22,6 +27,14 @@ function ExploreInner() {
       setCities(ci.data);
     });
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setSavedSearches([]);
+      return;
+    }
+    api.get('/client/saved-searches').then((res) => setSavedSearches(res.data || [])).catch(() => setSavedSearches([]));
+  }, [user]);
 
   const fetchAds = useCallback(() => {
     setLoading(true);
@@ -40,6 +53,39 @@ function ExploreInner() {
   useEffect(() => {
     fetchAds();
   }, [fetchAds]);
+
+  const handleSaveSearch = async () => {
+    if (!user) {
+      toast.error('Please login to save search alerts.');
+      return;
+    }
+    try {
+      const payload: Record<string, string> = {};
+      if (search.trim()) payload.query = search.trim();
+      if (selCat) payload.category_slug = selCat;
+      if (selCity) payload.city_slug = selCity;
+      if (!payload.query && !payload.category_slug && !payload.city_slug) {
+        toast.error('Apply at least one filter before saving alert.');
+        return;
+      }
+
+      const { data } = await api.post('/client/saved-searches', payload);
+      setSavedSearches((prev) => [data, ...prev.filter((item) => item.id !== data.id)]);
+      toast.success('Search alert saved');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to save search alert'));
+    }
+  };
+
+  const handleDeleteSavedSearch = async (id: string) => {
+    try {
+      await api.delete(`/client/saved-searches/${id}`);
+      setSavedSearches((prev) => prev.filter((item) => item.id !== id));
+      toast.success('Saved search removed');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to remove saved search'));
+    }
+  };
 
   return (
     <div className="panel-wrap">
@@ -131,8 +177,29 @@ function ExploreInner() {
                 <button className="md:col-span-3 btn-primary h-[42px]">
                   Search Ads
                 </button>
+                <button type="button" onClick={handleSaveSearch} className="md:col-span-3 btn-secondary h-[42px]">
+                  Save Search Alert
+                </button>
               </div>
             </div>
+
+            {user && savedSearches.length > 0 && (
+              <div className="card p-3 mb-5">
+                <p className="text-xs uppercase tracking-wider text-slate-300/70 mb-2">Saved Search Alerts</p>
+                <div className="flex flex-wrap gap-2">
+                  {savedSearches.slice(0, 8).map((item) => (
+                    <div key={item.id} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                      <span>
+                        {(item.query || 'Any').trim()} | {item.category_slug || 'all-categories'} | {item.city_slug || 'all-cities'}
+                      </span>
+                      <button type="button" onClick={() => handleDeleteSavedSearch(item.id)} className="text-rose-300 hover:text-rose-200">
+                        x
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
