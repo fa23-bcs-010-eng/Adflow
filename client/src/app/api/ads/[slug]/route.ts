@@ -25,6 +25,16 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
       .select('full_name,email,created_at')
       .eq('id', ad.user_id)
       .maybeSingle();
+    const { data: sellerProfile } = await supabaseAdmin
+      .from('seller_profiles')
+      .select('business_name,phone,whatsapp,is_verified')
+      .eq('user_id', ad.user_id)
+      .maybeSingle();
+    const { count: publishedAdsCount } = await supabaseAdmin
+      .from('ads')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', ad.user_id)
+      .eq('status', 'published');
 
     return NextResponse.json({
       ...ad,
@@ -33,9 +43,16 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
             full_name: owner.full_name,
             email: owner.email,
             member_since: owner.created_at,
+            business_name: sellerProfile?.business_name || null,
+            phone: sellerProfile?.phone || null,
+            whatsapp: sellerProfile?.whatsapp || null,
+            is_verified: Boolean(sellerProfile?.is_verified),
+            published_ads_count: publishedAdsCount || 0,
           }
         : null,
-      contact_email: ad.contact_email || owner?.email || null,
+      contact_email: ad.contact_email || sellerProfile?.phone || owner?.email || null,
+      contact_phone: ad.contact_phone || sellerProfile?.phone || null,
+      contact_whatsapp: ad.contact_whatsapp || sellerProfile?.whatsapp || null,
     });
   }
 
