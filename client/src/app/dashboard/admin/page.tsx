@@ -19,9 +19,19 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [tab, setTab] = useState<'analytics' | 'payments' | 'publish'>('analytics');
   const [analytics, setAnalytics] = useState<any>(null);
+  const [adsSummary, setAdsSummary] = useState<any>({
+    total_ads: 0,
+    live_ads: 0,
+    not_live_ads: 0,
+    featured_live_ads: 0,
+    draft_ads: 0,
+    pending_review_ads: 0,
+    expired_ads: 0,
+  });
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
+  const analyticsData = analytics || {};
 
   useEffect(() => {
     if (!authLoading && user && !['admin', 'super_admin'].includes(user.role)) router.push('/');
@@ -29,14 +39,27 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!user || !['admin', 'super_admin'].includes(user.role)) return;
-    Promise.all([api.get('/admin/analytics'), api.get('/admin/payment-queue')])
-      .then(([a, p]) => {
-        setAnalytics(a.data);
-        setPayments(p.data);
-      })
-      .catch(() => {
-        setAnalytics(null);
-        setPayments([]);
+    Promise.allSettled([
+      api.get('/admin/analytics'),
+      api.get('/admin/payment-queue'),
+      api.get('/admin/ads-summary'),
+    ])
+      .then(([a, p, s]) => {
+        setAnalytics(a.status === 'fulfilled' ? a.value.data : null);
+        setPayments(p.status === 'fulfilled' ? p.value.data : []);
+        setAdsSummary(
+          s.status === 'fulfilled'
+            ? s.value.data
+            : {
+                total_ads: 0,
+                live_ads: 0,
+                not_live_ads: 0,
+                featured_live_ads: 0,
+                draft_ads: 0,
+                pending_review_ads: 0,
+                expired_ads: 0,
+              }
+        );
       })
       .finally(() => setLoading(false));
   }, [user]);
@@ -99,32 +122,51 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {tab === 'analytics' && analytics && (
+        {tab === 'analytics' && (
           <div className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               <div className="kpi-card">
                 <p className="text-xs text-slate-300/60 mb-1">Revenue Growth</p>
-                <p className="text-4xl font-black text-white">${(analytics.total_revenue || 0).toLocaleString()}</p>
+                <p className="text-4xl font-black text-white">${(analyticsData.total_revenue || 0).toLocaleString()}</p>
                 <span className="status-up">+18.2%</span>
                 <Sparkline color="#22d3ee" />
               </div>
               <div className="kpi-card">
                 <p className="text-xs text-slate-300/60 mb-1">User Signups</p>
-                <p className="text-4xl font-black text-white">{analytics.total_users || 0}</p>
+                <p className="text-4xl font-black text-white">{analyticsData.total_users || 0}</p>
                 <span className="status-up">+12.4%</span>
                 <Sparkline color="#60a5fa" />
               </div>
               <div className="kpi-card">
                 <p className="text-xs text-slate-300/60 mb-1">Ad Submissions</p>
-                <p className="text-4xl font-black text-white">{analytics.total_ads || 0}</p>
+                <p className="text-4xl font-black text-white">{adsSummary.total_ads || analyticsData.total_ads || 0}</p>
                 <span className="status-up">+24.6%</span>
                 <Sparkline color="#fb923c" />
               </div>
               <div className="kpi-card">
-                <p className="text-xs text-slate-300/60 mb-1">Active Campaigns</p>
-                <p className="text-4xl font-black text-white">{analytics.published_ads || 0}</p>
+                <p className="text-xs text-slate-300/60 mb-1">Live Ads</p>
+                <p className="text-4xl font-black text-emerald-300">{adsSummary.live_ads || analyticsData.published_ads || 0}</p>
                 <span className="status-up">+9.1%</span>
                 <Sparkline color="#a78bfa" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="kpi-card">
+                <p className="text-xs text-slate-300/60 mb-1">Not Live Ads</p>
+                <p className="text-3xl font-black text-amber-300">{adsSummary.not_live_ads || 0}</p>
+              </div>
+              <div className="kpi-card">
+                <p className="text-xs text-slate-300/60 mb-1">Featured Live</p>
+                <p className="text-3xl font-black text-cyan-300">{adsSummary.featured_live_ads || 0}</p>
+              </div>
+              <div className="kpi-card">
+                <p className="text-xs text-slate-300/60 mb-1">Draft Ads</p>
+                <p className="text-3xl font-black text-white">{adsSummary.draft_ads || 0}</p>
+              </div>
+              <div className="kpi-card">
+                <p className="text-xs text-slate-300/60 mb-1">Pending Review</p>
+                <p className="text-3xl font-black text-white">{adsSummary.pending_review_ads || 0}</p>
               </div>
             </div>
 

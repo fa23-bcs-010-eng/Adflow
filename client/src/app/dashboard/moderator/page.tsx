@@ -13,6 +13,15 @@ export default function ModeratorDashboard() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [queue, setQueue] = useState<any[]>([]);
+  const [adsSummary, setAdsSummary] = useState<any>({
+    total_ads: 0,
+    live_ads: 0,
+    not_live_ads: 0,
+    featured_live_ads: 0,
+    draft_ads: 0,
+    pending_review_ads: 0,
+    expired_ads: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<any>(null);
   const [note, setNote] = useState('');
@@ -33,11 +42,19 @@ export default function ModeratorDashboard() {
 
   useEffect(() => {
     if (!user || !['moderator', 'admin', 'super_admin'].includes(user.role)) return;
-    api
-      .get('/moderator/review-queue')
-      .then((r) => {
-        setQueue(r.data);
-        if (r.data.length > 0) setSelected(r.data[0]);
+    Promise.allSettled([api.get('/moderator/review-queue'), api.get('/admin/ads-summary')])
+      .then(([queueRes, summaryRes]) => {
+        if (queueRes.status === 'fulfilled') {
+          setQueue(queueRes.value.data);
+          if (queueRes.value.data.length > 0) setSelected(queueRes.value.data[0]);
+        } else {
+          setQueue([]);
+          setSelected(null);
+        }
+
+        if (summaryRes.status === 'fulfilled') {
+          setAdsSummary(summaryRes.value.data);
+        }
       })
       .catch(() => {
         setQueue([]);
@@ -143,8 +160,8 @@ export default function ModeratorDashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-5">
                   <div className="kpi-card bg-white border border-slate-200 text-slate-900 p-4"><p className="text-sm text-slate-500">Pending</p><p className="text-3xl font-black mt-1">{reviewStats.pending}</p></div>
                   <div className="kpi-card bg-white border border-slate-200 text-slate-900 p-4"><p className="text-sm text-slate-500">Flagged</p><p className="text-3xl font-black mt-1">{reviewStats.flagged}</p></div>
-                  <div className="kpi-card bg-white border border-slate-200 text-slate-900 p-4"><p className="text-sm text-slate-500">Approved</p><p className="text-3xl font-black mt-1">{reviewStats.approved}</p></div>
-                  <div className="kpi-card bg-white border border-slate-200 text-slate-900 p-4"><p className="text-sm text-slate-500">Needs changes</p><p className="text-3xl font-black mt-1">{reviewStats.needsChanges}</p></div>
+                  <div className="kpi-card bg-white border border-slate-200 text-slate-900 p-4"><p className="text-sm text-slate-500">Live Ads</p><p className="text-3xl font-black mt-1 text-emerald-600">{adsSummary.live_ads || 0}</p></div>
+                  <div className="kpi-card bg-white border border-slate-200 text-slate-900 p-4"><p className="text-sm text-slate-500">Not Live Ads</p><p className="text-3xl font-black mt-1 text-amber-600">{adsSummary.not_live_ads || 0}</p></div>
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-[1.3fr_1fr] gap-5 items-start">
