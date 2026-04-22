@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { getErrorMessage } from '@/lib/errors';
 import { Zap } from 'lucide-react';
@@ -29,11 +29,16 @@ const roleDemoEmail: Record<DemoRole, string> = {
 export default function LoginPage() {
   const { login, demoLogin } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const DEMO_PASSWORD = 'demo123';
-  const nextPath = searchParams.get('next') || '/dashboard/client';
+  const [nextPath, setNextPath] = useState('/dashboard/client');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const next = new URLSearchParams(window.location.search).get('next');
+    if (next) setNextPath(next);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
