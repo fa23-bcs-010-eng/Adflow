@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { MapPin, Tag, Clock, Star, Eye } from 'lucide-react';
+import { MapPin, Tag, Clock, Star, Eye, ArrowRight } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 
 interface Ad {
@@ -103,6 +103,10 @@ export default function AdCard({ ad, showStatus = false }: { ad: Ad; showStatus?
               <Clock size={10} /> {new Date(ad.published_at).toLocaleDateString()}
             </span>
           )}
+        </div>
+
+        <div className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-cyan-300 group-hover:text-cyan-200 transition-colors">
+          View Complete Details <ArrowRight size={12} />
         </div>
       </div>
     </Link>
