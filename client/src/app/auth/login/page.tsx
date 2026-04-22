@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { getErrorMessage } from '@/lib/errors';
 import { Zap } from 'lucide-react';
@@ -29,9 +29,11 @@ const roleDemoEmail: Record<DemoRole, string> = {
 export default function LoginPage() {
   const { login, demoLogin } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const DEMO_PASSWORD = 'demo123';
+  const nextPath = searchParams.get('next') || '/dashboard/client';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +41,7 @@ export default function LoginPage() {
     try {
       await login(form.email, form.password);
       toast.success('Welcome back!');
-      router.push('/dashboard/client');
+      router.push(nextPath);
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, 'Login failed'));
     } finally {
@@ -54,13 +56,13 @@ export default function LoginPage() {
       // First try normal login with shared demo credentials.
       await login(email, DEMO_PASSWORD);
       toast.success(`Logged in as ${role.replace('_', ' ')}`);
-      router.push(roleDashboard[role]);
+      router.push(nextPath || roleDashboard[role]);
     } catch {
       // If demo user does not exist yet, create/login via demo endpoint for the selected role.
       try {
         await demoLogin(role);
         toast.success(`Demo ${role.replace('_', ' ')} account ready`);
-        router.push(roleDashboard[role]);
+        router.push(nextPath || roleDashboard[role]);
       } catch {
         toast.error('Demo login failed');
       }

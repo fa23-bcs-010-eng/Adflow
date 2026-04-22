@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, Suspense } from 'react';
 import { Search, SlidersHorizontal, MapPin, Layers, Sparkles } from 'lucide-react';
 import api from '@/lib/api';
 import AdCard from '@/components/AdCard';
+import Link from 'next/link';
 
 function ExploreInner() {
   const [ads, setAds] = useState<any[]>([]);
@@ -46,6 +47,14 @@ function ExploreInner() {
         <div className="mb-6 md:mb-7">
           <h1 className="section-title !mb-2">Explore Ads Marketplace</h1>
           <p className="section-sub !mb-0">Find verified listings with smart category and location filters.</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link href="/dashboard/client?tab=create" className="btn-primary text-sm">
+              Sell Your Product
+            </Link>
+            <Link href="/auth/login?next=%2Fdashboard%2Fclient%3Ftab%3Dcreate" className="btn-secondary text-sm">
+              Login to Sell
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">

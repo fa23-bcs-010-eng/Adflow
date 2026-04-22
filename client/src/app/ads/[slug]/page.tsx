@@ -11,10 +11,13 @@ import {
   ArrowLeft,
   CalendarClock,
   ShieldCheck,
+  ShoppingCart,
+  CreditCard,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { useCart } from '@/lib/cart';
 import toast from 'react-hot-toast';
 
 type AdDetails = {
@@ -44,6 +47,7 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
   const { slug } = use(params);
   const router = useRouter();
   const { user } = useAuth();
+  const { addItem } = useCart();
   const [ad, setAd] = useState<AdDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
@@ -57,6 +61,13 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
     toast.error('Please login first, then you can contact the owner.');
     const redirect = encodeURIComponent(`/ads/${slug}`);
     router.push(`/auth/login?next=${redirect}&contact=${encodeURIComponent(href)}`);
+  };
+
+  const ensureLoggedInForPurchase = () => {
+    if (user) return true;
+    toast.error('Please login first to continue purchase.');
+    router.push(`/auth/login?next=${encodeURIComponent(`/ads/${slug}`)}`);
+    return false;
   };
 
   useEffect(() => {
@@ -116,6 +127,31 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
 
   const media = ad.media || [];
   const current = media[activeImg]?.media_url;
+  const primaryImage = media.find((m) => m.is_primary)?.media_url || media[0]?.media_url;
+
+  const handleAddToCart = () => {
+    if (!ensureLoggedInForPurchase()) return;
+    addItem({
+      id: ad.id,
+      slug: ad.slug,
+      title: ad.title,
+      price: Number(ad.price || 0),
+      image: primaryImage,
+    });
+    toast.success('Added to cart');
+  };
+
+  const handleBuyNow = () => {
+    if (!ensureLoggedInForPurchase()) return;
+    addItem({
+      id: ad.id,
+      slug: ad.slug,
+      title: ad.title,
+      price: Number(ad.price || 0),
+      image: primaryImage,
+    });
+    router.push('/checkout');
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
@@ -191,6 +227,23 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
             <div className="flex items-center gap-3 text-xs text-gray-500 mt-3">
               <Eye size={12} /> {ad.view_count || 0} views
               {ad.published_at && <>· {new Date(ad.published_at).toLocaleDateString()}</>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                className="btn-secondary inline-flex items-center justify-center gap-2 text-sm"
+              >
+                <ShoppingCart size={14} /> Add to Cart
+              </button>
+              <button
+                type="button"
+                onClick={handleBuyNow}
+                className="btn-primary inline-flex items-center justify-center gap-2 text-sm"
+              >
+                <CreditCard size={14} /> Buy Now
+              </button>
             </div>
           </div>
 
