@@ -868,9 +868,14 @@ export default function ClientDashboard() {
                               )}
                             </div>
                             <div className="flex flex-wrap gap-2 mt-3">
-                              {['placed', 'confirmed'].includes(String(item.orders?.status || 'placed')) && (
+                              {String(item.orders?.status || 'placed') === 'placed' && (
                                 <button onClick={() => handleSellerOrderStatus(item.order_id, 'confirmed')} className="btn-secondary text-xs">
                                   Confirm
+                                </button>
+                              )}
+                              {String(item.orders?.status || 'placed') === 'confirmed' && (
+                                <button onClick={() => handleSellerOrderStatus(item.order_id, 'processing')} className="btn-secondary text-xs">
+                                  Mark Processing
                                 </button>
                               )}
                               {['confirmed', 'processing'].includes(String(item.orders?.status || 'placed')) && (

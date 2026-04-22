@@ -56,6 +56,10 @@ export async function PATCH(
     }
 
     const currentStatus = String(order.status);
+    if (currentStatus === body.status) {
+      return NextResponse.json(order);
+    }
+
     if (!transitions[currentStatus]?.includes(body.status)) {
       return NextResponse.json(
         { error: `Invalid status transition from ${currentStatus} to ${body.status}` },
