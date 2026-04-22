@@ -13,6 +13,14 @@ export type DemoAd = {
   category: { name: string; slug: string };
   city: { name: string; slug: string };
   package: { name: string; featured_scope?: string; weight?: number };
+  seller?: {
+    full_name: string;
+    email: string;
+    member_since: string;
+  };
+  contact_phone?: string;
+  contact_email?: string;
+  contact_whatsapp?: string;
   media: { media_url: string; is_primary: boolean; media_type: 'image' }[];
 };
 
@@ -34,6 +42,14 @@ export const DEMO_ADS: DemoAd[] = [
     category: { name: 'Mobiles', slug: 'mobiles' },
     city: { name: 'Karachi', slug: 'karachi' },
     package: { name: 'Premium', featured_scope: 'homepage', weight: 3 },
+    seller: {
+      full_name: 'Ahmed Mobile Hub',
+      email: 'seller@adflow.com',
+      member_since: '2023-02-15T00:00:00.000Z',
+    },
+    contact_phone: '+923001112233',
+    contact_email: 'seller@adflow.com',
+    contact_whatsapp: '923001112233',
     media: [
       {
         media_url: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=1200&q=80',
@@ -57,6 +73,14 @@ export const DEMO_ADS: DemoAd[] = [
     category: { name: 'Vehicles', slug: 'vehicles' },
     city: { name: 'Lahore', slug: 'lahore' },
     package: { name: 'Premium', featured_scope: 'homepage', weight: 3 },
+    seller: {
+      full_name: 'Auto Zone Lahore',
+      email: 'autozone@adflow.com',
+      member_since: '2022-09-01T00:00:00.000Z',
+    },
+    contact_phone: '+923331234567',
+    contact_email: 'autozone@adflow.com',
+    contact_whatsapp: '923331234567',
     media: [
       {
         media_url: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80',
@@ -80,6 +104,14 @@ export const DEMO_ADS: DemoAd[] = [
     category: { name: 'Laptops', slug: 'laptops' },
     city: { name: 'Islamabad', slug: 'islamabad' },
     package: { name: 'Premium', featured_scope: 'homepage', weight: 3 },
+    seller: {
+      full_name: 'Tech House Islamabad',
+      email: 'techhouse@adflow.com',
+      member_since: '2024-01-05T00:00:00.000Z',
+    },
+    contact_phone: '+923451112233',
+    contact_email: 'techhouse@adflow.com',
+    contact_whatsapp: '923451112233',
     media: [
       {
         media_url: 'https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1200',
@@ -103,6 +135,14 @@ export const DEMO_ADS: DemoAd[] = [
     category: { name: 'Property', slug: 'property' },
     city: { name: 'Karachi', slug: 'karachi' },
     package: { name: 'Standard', weight: 2 },
+    seller: {
+      full_name: 'DHA Estate Links',
+      email: 'estate@adflow.com',
+      member_since: '2021-07-10T00:00:00.000Z',
+    },
+    contact_phone: '+923008887766',
+    contact_email: 'estate@adflow.com',
+    contact_whatsapp: '923008887766',
     media: [
       {
         media_url: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=1200&q=80',
@@ -126,6 +166,14 @@ export const DEMO_ADS: DemoAd[] = [
     category: { name: 'Electronics', slug: 'electronics' },
     city: { name: 'Rawalpindi', slug: 'rawalpindi' },
     package: { name: 'Standard', weight: 2 },
+    seller: {
+      full_name: 'Photo Gear PK',
+      email: 'photogear@adflow.com',
+      member_since: '2023-06-20T00:00:00.000Z',
+    },
+    contact_phone: '+923211234567',
+    contact_email: 'photogear@adflow.com',
+    contact_whatsapp: '923211234567',
     media: [
       {
         media_url: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80',
@@ -149,6 +197,14 @@ export const DEMO_ADS: DemoAd[] = [
     category: { name: 'Jobs', slug: 'jobs' },
     city: { name: 'Dubai', slug: 'dubai' },
     package: { name: 'Basic', weight: 1 },
+    seller: {
+      full_name: 'Creative Talent LLC',
+      email: 'hr@adflow.com',
+      member_since: '2022-03-18T00:00:00.000Z',
+    },
+    contact_phone: '+971501112233',
+    contact_email: 'hr@adflow.com',
+    contact_whatsapp: '971501112233',
     media: [
       {
         media_url: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80',
