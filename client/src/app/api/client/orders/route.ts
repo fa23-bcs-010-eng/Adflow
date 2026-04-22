@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getAuthenticatedUser } from '@/lib/server/request-auth';
 import { getSupabaseAdmin } from '@/lib/server/supabase';
 import { DEMO_ADS } from '@/lib/demo-ads';
+import { estimateShipping, scoreFraudRisk } from '@/lib/server/marketplace-intelligence';
 
 const createOrderSchema = z.object({
   items: z
@@ -247,6 +248,54 @@ export async function POST(request: NextRequest) {
 
     if (purchaseEvents.length > 0) {
       await supabaseAdmin.from('ad_analytics_events').insert(purchaseEvents);
+    }
+
+    const firstSellerId = orderItemsPayload.find((item) => item.seller_id)?.seller_id || null;
+    const fraud = scoreFraudRisk({
+      title: normalizedItems.map((item) => item.ad_title).join(' | '),
+      description: body.note || '',
+      price: totalAmount,
+      mediaCount: 1,
+    });
+
+    await supabaseAdmin.from('escrow_transactions').insert({
+      order_id: orderId,
+      buyer_id: user.id,
+      seller_id: firstSellerId,
+      amount: totalAmount,
+      status: 'held',
+      risk_score: fraud.risk_score,
+      notes: fraud.reasons.join(' '),
+    });
+
+    const firstDbAd = normalizedItems.find((item) => item.ad_id);
+    if (firstDbAd?.ad_id) {
+      const { data: adData } = await supabaseAdmin
+        .from('ads')
+        .select('id,price,city:cities(name),category:categories(slug)')
+        .eq('id', firstDbAd.ad_id)
+        .maybeSingle();
+
+      const shipping = estimateShipping({
+        price: Number(adData?.price || totalAmount),
+        fromCity: adData?.city?.name || 'Origin',
+        toCity: 'Destination',
+        category: adData?.category?.slug || '',
+      });
+
+      await supabaseAdmin.from('logistics_shipments').insert({
+        order_id: orderId,
+        ad_id: adData?.id || null,
+        seller_id: firstSellerId,
+        buyer_id: user.id,
+        provider: shipping.provider,
+        status: 'quote_only',
+        origin_city: adData?.city?.name || null,
+        destination_city: null,
+        estimated_cost: shipping.estimated_cost,
+        estimated_delivery_days: shipping.estimated_delivery_days,
+        last_event: 'Quote generated',
+      });
     }
 
     await supabaseAdmin.from('notifications').insert({

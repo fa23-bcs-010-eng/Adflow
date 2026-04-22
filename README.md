@@ -71,6 +71,7 @@ graph TD
 - **Smart Ad Discovery**: Browse, filter, and search for ads categorized by specific niches and cities.
 - **Buy & Sell Marketplace Flow**: Buyers can open ad details, add to cart, and place orders. Sellers can publish ads and track incoming orders.
 - **Business Growth Layer**: Seller reviews, conversion analytics, complaint handling, promotions, and SEO marketplace pages now support real marketplace growth workflows.
+- **Pro Marketplace Layer**: Escrow hold and release, shipment tracking, fraud risk scoring, AI pricing guidance, and AI auto-moderation bring enterprise-grade controls into the listing workflow.
 - **Dynamic Checkout Flow**: Tab-based payment gateway supporting multiple methodologies (Credit/Debit, Bank transfer, Mobile Wallet).
 - **Premium Packages**: Users can upgrade their ad visibility by purchasing standardized or premium packages.
 - **Client Dashboard**: Manage profiles, view ad metrics, track payments, and follow up on submitted ad statuses.
@@ -248,6 +249,21 @@ This creates:
 - `ad_analytics_events`
 
 After migration, sellers can boost listings, buyers can submit reviews after delivery, moderators can process reports, and analytics will track views, chats, cart adds, and purchases.
+
+---
+
+## Phase 3 Pro Marketplace Setup
+
+To enable escrow, logistics, fraud scoring, pricing suggestions, and AI moderation, run:
+
+- `db/phase3_pro_marketplace.sql`
+
+This creates:
+- `escrow_transactions`
+- `logistics_shipments`
+- `ad_ai_assessments`
+
+After migration, order funds are held in escrow, logistics records can be created and tracked, admin gets a fraud dashboard, and ad submissions store AI pricing and moderation assessments.
 
 ---
 

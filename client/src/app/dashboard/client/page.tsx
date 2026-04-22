@@ -22,6 +22,9 @@ import {
   Rocket,
   Siren,
   SearchCheck,
+  ShieldAlert,
+  Truck,
+  Landmark,
 } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
@@ -41,6 +44,10 @@ export default function ClientDashboard() {
   const [sellingOrders, setSellingOrders] = useState<any[]>([]);
   const [sellerAnalytics, setSellerAnalytics] = useState<any>({ summary: {}, listings: [] });
   const [promotions, setPromotions] = useState<any[]>([]);
+  const [listingInsight, setListingInsight] = useState<any>(null);
+  const [loadingInsight, setLoadingInsight] = useState(false);
+  const [escrowByOrder, setEscrowByOrder] = useState<Record<string, any>>({});
+  const [shipmentByOrder, setShipmentByOrder] = useState<Record<string, any>>({});
   const [tab, setTab] = useState<ClientTab>('ads');
   const [loading, setLoading] = useState(true);
   const [ordersLoading, setOrdersLoading] = useState(true);
@@ -185,20 +192,25 @@ export default function ClientDashboard() {
 
   const handleSubmitAd = async (adId: string) => {
     try {
-      await api.post(`/client/ads/${adId}/submit`);
+      const { data } = await api.post(`/client/ads/${adId}/submit`);
       setAds((prev) =>
         prev.map((a) =>
           a.id === adId
             ? {
                 ...a,
-                status: 'published',
-                is_featured: true,
-                published_at: new Date().toISOString(),
+                status: data.status,
+                is_featured: data.is_featured,
+                published_at: data.published_at,
+                moderator_note: data.moderator_note,
               }
             : a
         )
       );
-      toast.success('Ad is now live and featured');
+      if (data.ai_assessment?.moderation_decision === 'approve') {
+        toast.success('Ad passed AI checks and is now live');
+      } else {
+        toast.success(`Ad routed to ${data.status.replace('_', ' ')} after AI review`);
+      }
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, 'Failed to submit'));
     }
@@ -265,6 +277,77 @@ export default function ClientDashboard() {
       toast.error(getErrorMessage(err, 'Failed to submit review'));
     }
   };
+
+  const handleGenerateInsights = async () => {
+    setLoadingInsight(true);
+    try {
+      const { data } = await api.post('/ai/listing-insights', {
+        title: form.title,
+        description: form.description,
+        price: form.price ? parseFloat(form.price) : undefined,
+        mediaCount: form.media.filter((m) => m.media_url).length,
+      });
+      setListingInsight(data);
+      if (!form.price && data?.suggested_price) {
+        setForm((prev) => ({ ...prev, price: String(data.suggested_price) }));
+      }
+      toast.success('AI suggestions ready');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to generate AI suggestions'));
+    } finally {
+      setLoadingInsight(false);
+    }
+  };
+
+  const loadEscrow = async (orderId: string) => {
+    try {
+      const { data } = await api.get(`/client/orders/${orderId}/escrow`);
+      setEscrowByOrder((prev) => ({ ...prev, [orderId]: data }));
+    } catch {
+      // Keep UI usable if escrow is missing.
+    }
+  };
+
+  const loadShipment = async (orderId: string) => {
+    try {
+      const { data } = await api.get(`/client/orders/${orderId}/logistics`);
+      setShipmentByOrder((prev) => ({ ...prev, [orderId]: data }));
+    } catch {
+      // Keep UI usable if shipment is missing.
+    }
+  };
+
+  const handleReleaseEscrow = async (orderId: string) => {
+    try {
+      const { data } = await api.patch(`/client/orders/${orderId}/escrow`, { action: 'release' });
+      setEscrowByOrder((prev) => ({ ...prev, [orderId]: data }));
+      toast.success('Escrow released to seller');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to release escrow'));
+    }
+  };
+
+  const handleCreateShipment = async (orderId: string) => {
+    try {
+      const { data } = await api.post(`/client/orders/${orderId}/logistics`, { action: 'create', destination_city: 'Buyer destination' });
+      setShipmentByOrder((prev) => ({ ...prev, [orderId]: data }));
+      toast.success('Shipment created');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to create shipment'));
+    }
+  };
+
+  useEffect(() => {
+    const deliveredOrders = buyingOrders.filter((order) => String(order.status) === 'delivered');
+    deliveredOrders.forEach((order) => {
+      if (!escrowByOrder[order.id]) {
+        loadEscrow(order.id);
+      }
+      if (!shipmentByOrder[order.id]) {
+        loadShipment(order.id);
+      }
+    });
+  }, [buyingOrders]);
 
   const addMedia = () => setForm((f) => ({ ...f, media: [...f.media, { media_url: '', media_type: 'image' }] }));
   const removeMedia = (i: number) => setForm((f) => ({ ...f, media: f.media.filter((_, idx) => idx !== i) }));
@@ -529,7 +612,39 @@ export default function ClientDashboard() {
 
             {tab === 'create' && (
               <div className="card p-5">
-                <h2 className="panel-title text-lg mb-4">Create New Ad</h2>
+                <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                  <h2 className="panel-title text-lg">Create New Ad</h2>
+                  <button type="button" onClick={handleGenerateInsights} disabled={loadingInsight} className="btn-secondary text-sm inline-flex items-center gap-2">
+                    <Sparkles size={14} /> {loadingInsight ? 'Analyzing...' : 'AI Suggest Price'}
+                  </button>
+                </div>
+                {listingInsight && (
+                  <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/5 p-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Suggested Price</p>
+                        <p className="text-lg font-bold text-cyan-300">PKR {Number(listingInsight.suggested_price || 0).toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Range</p>
+                        <p className="text-sm text-slate-200">
+                          PKR {Number(listingInsight.suggested_price_min || 0).toLocaleString()} - {Number(listingInsight.suggested_price_max || 0).toLocaleString()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Quality Score</p>
+                        <p className="text-lg font-bold text-white">{listingInsight.quality_score || 0}/100</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Risk Score</p>
+                        <p className={`text-lg font-bold ${Number(listingInsight.risk_score || 0) >= 70 ? 'text-red-300' : Number(listingInsight.risk_score || 0) >= 35 ? 'text-amber-300' : 'text-emerald-300'}`}>
+                          {listingInsight.risk_score || 0}/100
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-300/80 mt-3">{listingInsight.reasoning}</p>
+                  </div>
+                )}
                 <form onSubmit={handleCreate} className="space-y-4">
                   <div>
                     <label className="label">Title</label>
@@ -659,6 +774,27 @@ export default function ClientDashboard() {
                               Total: PKR {Number(order.total_amount || 0).toLocaleString()} | Items: {(order.items || []).length}
                             </p>
                             <p className="text-xs text-slate-500 mt-1">{new Date(order.created_at).toLocaleString()}</p>
+                            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                                <div className="inline-flex items-center gap-2 text-xs text-slate-400 mb-1"><Landmark size={12} /> Escrow</div>
+                                <p className="text-sm text-white capitalize">{escrowByOrder[order.id]?.status || 'Loading...'}</p>
+                                {escrowByOrder[order.id]?.risk_score !== undefined && (
+                                  <p className="text-xs text-slate-400 mt-1">Risk: {escrowByOrder[order.id].risk_score}/100</p>
+                                )}
+                                {String(order.status) === 'delivered' && String(escrowByOrder[order.id]?.status || '') === 'held' && (
+                                  <button onClick={() => handleReleaseEscrow(order.id)} className="btn-primary text-xs mt-2">
+                                    Release Escrow
+                                  </button>
+                                )}
+                              </div>
+                              <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                                <div className="inline-flex items-center gap-2 text-xs text-slate-400 mb-1"><Truck size={12} /> Logistics</div>
+                                <p className="text-sm text-white capitalize">{shipmentByOrder[order.id]?.status || 'Loading...'}</p>
+                                {shipmentByOrder[order.id]?.tracking_number && (
+                                  <p className="text-xs text-slate-400 mt-1">Tracking: {shipmentByOrder[order.id].tracking_number}</p>
+                                )}
+                              </div>
+                            </div>
                             {String(order.status) === 'delivered' && (order.items || []).slice(0, 1).map((item: any) => (
                               <div key={item.id} className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3">
                                 <div className="flex items-center gap-2 mb-2 text-sm text-white">
@@ -720,6 +856,17 @@ export default function ClientDashboard() {
                             </p>
                             <p className="text-xs text-cyan-300 mt-1 capitalize">Status: {item.orders?.status || 'placed'}</p>
                             <p className="text-xs text-slate-500 mt-1">{new Date(item.created_at).toLocaleString()}</p>
+                            <div className="rounded-xl border border-white/10 bg-white/5 p-3 mt-3">
+                              <div className="inline-flex items-center gap-2 text-xs text-slate-400 mb-1"><Truck size={12} /> Shipment</div>
+                              <p className="text-sm text-white capitalize">{shipmentByOrder[item.order_id]?.status || 'Quote only'}</p>
+                              {shipmentByOrder[item.order_id]?.tracking_number ? (
+                                <p className="text-xs text-slate-400 mt-1">Tracking: {shipmentByOrder[item.order_id].tracking_number}</p>
+                              ) : (
+                                <button onClick={() => handleCreateShipment(item.order_id)} className="btn-secondary text-xs mt-2">
+                                  Create Shipment
+                                </button>
+                              )}
+                            </div>
                             <div className="flex flex-wrap gap-2 mt-3">
                               {['placed', 'confirmed'].includes(String(item.orders?.status || 'placed')) && (
                                 <button onClick={() => handleSellerOrderStatus(item.order_id, 'confirmed')} className="btn-secondary text-xs">

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, XCircle, Send, LineChart, UserPlus, BadgeDollarSign, Megaphone } from 'lucide-react';
+import { CheckCircle, XCircle, Send, LineChart, UserPlus, BadgeDollarSign, Megaphone, ShieldAlert, Landmark, Truck } from 'lucide-react';
 import api from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { useAuth } from '@/lib/auth';
@@ -17,8 +17,9 @@ const Sparkline = ({ color = '#22d3ee' }: { color?: string }) => (
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [tab, setTab] = useState<'analytics' | 'payments' | 'publish'>('analytics');
+  const [tab, setTab] = useState<'analytics' | 'payments' | 'publish' | 'fraud'>('analytics');
   const [analytics, setAnalytics] = useState<any>(null);
+  const [fraud, setFraud] = useState<any>({ summary: {}, risks: [], escrow: [], reports: [] });
   const [adsSummary, setAdsSummary] = useState<any>({
     total_ads: 0,
     live_ads: 0,
@@ -43,10 +44,12 @@ export default function AdminDashboard() {
       api.get('/admin/analytics'),
       api.get('/admin/payment-queue'),
       api.get('/admin/ads-summary'),
+      api.get('/admin/fraud-dashboard'),
     ])
-      .then(([a, p, s]) => {
+      .then(([a, p, s, f]) => {
         setAnalytics(a.status === 'fulfilled' ? a.value.data : null);
         setPayments(p.status === 'fulfilled' ? p.value.data : []);
+        setFraud(f.status === 'fulfilled' ? f.value.data : { summary: {}, risks: [], escrow: [], reports: [] });
         setAdsSummary(
           s.status === 'fulfilled'
             ? s.value.data
@@ -110,6 +113,7 @@ export default function AdminDashboard() {
           {[
             ['analytics', 'Analytics'],
             ['payments', `Payments (${payments.length})`],
+            ['fraud', 'Fraud'],
             ['publish', 'Publish'],
           ].map(([k, label]) => (
             <button
@@ -245,6 +249,86 @@ export default function AdminDashboard() {
                 </div>
               ))
             )}
+          </div>
+        )}
+
+        {tab === 'fraud' && (
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="kpi-card">
+                <p className="text-xs text-slate-300/60 mb-1">High Risk Ads</p>
+                <p className="text-4xl font-black text-red-300">{fraud.summary?.high_risk_ads || 0}</p>
+              </div>
+              <div className="kpi-card">
+                <p className="text-xs text-slate-300/60 mb-1">Medium Risk Ads</p>
+                <p className="text-4xl font-black text-amber-300">{fraud.summary?.medium_risk_ads || 0}</p>
+              </div>
+              <div className="kpi-card">
+                <p className="text-xs text-slate-300/60 mb-1">Open Reports</p>
+                <p className="text-4xl font-black text-white">{fraud.summary?.open_reports || 0}</p>
+              </div>
+              <div className="kpi-card">
+                <p className="text-xs text-slate-300/60 mb-1">Disputed Escrow</p>
+                <p className="text-4xl font-black text-cyan-300">{fraud.summary?.disputed_escrow || 0}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-4">
+              <div className="card p-5">
+                <div className="flex items-center gap-2 mb-4 text-slate-100">
+                  <ShieldAlert size={16} className="text-red-300" />
+                  <h2 className="panel-title text-lg">Risk Scoring Feed</h2>
+                </div>
+                <div className="space-y-3">
+                  {(fraud.risks || []).slice(0, 8).map((risk: any) => (
+                    <div key={risk.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <p className="text-sm font-semibold text-white">Ad #{String(risk.ad_id).slice(0, 8)}</p>
+                        <span className={`text-xs uppercase ${risk.risk_band === 'high' ? 'text-red-300' : risk.risk_band === 'medium' ? 'text-amber-300' : 'text-emerald-300'}`}>
+                          {risk.risk_band}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300/80">Risk: {risk.risk_score}/100 | Quality: {risk.quality_score}/100 | Reports: {risk.report_count}</p>
+                      <p className="text-xs text-slate-500 mt-2">{risk.reasoning}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="card p-5">
+                  <div className="flex items-center gap-2 mb-4 text-slate-100">
+                    <Landmark size={16} className="text-cyan-300" />
+                    <h2 className="panel-title text-lg">Escrow Watch</h2>
+                  </div>
+                  <div className="space-y-3">
+                    {(fraud.escrow || []).slice(0, 5).map((item: any) => (
+                      <div key={item.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                        <p className="text-sm text-white font-semibold">Order #{String(item.order_id).slice(0, 8)}</p>
+                        <p className="text-xs text-slate-400 mt-1">PKR {Number(item.amount || 0).toLocaleString()} | {item.status}</p>
+                        <p className="text-xs text-slate-500 mt-1">Risk score: {item.risk_score || 0}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="card p-5">
+                  <div className="flex items-center gap-2 mb-4 text-slate-100">
+                    <Truck size={16} className="text-cyan-300" />
+                    <h2 className="panel-title text-lg">Moderation Pressure</h2>
+                  </div>
+                  <div className="space-y-3">
+                    {(fraud.reports || []).slice(0, 5).map((report: any) => (
+                      <div key={report.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                        <p className="text-sm text-white font-semibold">Ad #{String(report.ad_id).slice(0, 8)}</p>
+                        <p className="text-xs text-slate-400 mt-1">Status: {report.status}</p>
+                        <p className="text-xs text-slate-500 mt-1">{new Date(report.created_at).toLocaleString()}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
