@@ -5,6 +5,12 @@ import { autoModerationDecision, suggestPriceRange } from '@/lib/server/marketpl
 
 export const dynamic = 'force-dynamic';
 
+function readSlug(value: { slug?: string } | { slug?: string }[] | null | undefined) {
+  if (!value) return '';
+  if (Array.isArray(value)) return value[0]?.slug || '';
+  return value.slug || '';
+}
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = getAuthenticatedUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
@@ -29,16 +35,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     title: found.data.title,
     description: found.data.description,
     price: Number(found.data.price || 0),
-    category: found.data.category?.slug || '',
-    city: found.data.city?.slug || '',
+    category: readSlug(found.data.category),
+    city: readSlug(found.data.city),
     mediaCount: Array.isArray(found.data.media) ? found.data.media.length : 0,
   });
   const pricing = suggestPriceRange({
     title: found.data.title,
     description: found.data.description,
     price: Number(found.data.price || 0),
-    category: found.data.category?.slug || '',
-    city: found.data.city?.slug || '',
+    category: readSlug(found.data.category),
+    city: readSlug(found.data.city),
     mediaCount: Array.isArray(found.data.media) ? found.data.media.length : 0,
   });
 
