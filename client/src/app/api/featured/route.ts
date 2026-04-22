@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/server/supabase';
+import { DEMO_ADS } from '@/lib/demo-ads';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,5 +19,9 @@ export async function GET() {
     return NextResponse.json({ error: error.message || 'Failed to load featured ads' }, { status: 500 });
   }
 
-  return NextResponse.json(data ?? []);
+  if (data && data.length > 0) {
+    return NextResponse.json(data);
+  }
+
+  return NextResponse.json(DEMO_ADS.filter((ad) => ad.is_featured).slice(0, 8));
 }

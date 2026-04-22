@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/server/supabase';
+import { DEMO_ADS } from '@/lib/demo-ads';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,5 +30,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message || 'Failed to load ads' }, { status: 500 });
   }
 
-  return NextResponse.json(data ?? []);
+  if (data && data.length > 0) {
+    return NextResponse.json(data);
+  }
+
+  const filtered = DEMO_ADS.filter((ad) => {
+    if (category && ad.category.slug !== category) return false;
+    if (city && ad.city.slug !== city) return false;
+    if (search && !ad.title.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  return NextResponse.json(filtered.slice(start, end));
 }
