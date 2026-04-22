@@ -20,6 +20,18 @@ const createOrderSchema = z.object({
 
 export const dynamic = 'force-dynamic';
 
+function readName(value: { name?: string } | { name?: string }[] | null | undefined) {
+  if (!value) return '';
+  if (Array.isArray(value)) return value[0]?.name || '';
+  return value.name || '';
+}
+
+function readSlug(value: { slug?: string } | { slug?: string }[] | null | undefined) {
+  if (!value) return '';
+  if (Array.isArray(value)) return value[0]?.slug || '';
+  return value.slug || '';
+}
+
 export async function GET(request: NextRequest) {
   const user = getAuthenticatedUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
@@ -278,9 +290,9 @@ export async function POST(request: NextRequest) {
 
       const shipping = estimateShipping({
         price: Number(adData?.price || totalAmount),
-        fromCity: adData?.city?.name || 'Origin',
+        fromCity: readName(adData?.city) || 'Origin',
         toCity: 'Destination',
-        category: adData?.category?.slug || '',
+        category: readSlug(adData?.category) || '',
       });
 
       await supabaseAdmin.from('logistics_shipments').insert({
@@ -290,7 +302,7 @@ export async function POST(request: NextRequest) {
         buyer_id: user.id,
         provider: shipping.provider,
         status: 'quote_only',
-        origin_city: adData?.city?.name || null,
+        origin_city: readName(adData?.city) || null,
         destination_city: null,
         estimated_cost: shipping.estimated_cost,
         estimated_delivery_days: shipping.estimated_delivery_days,
