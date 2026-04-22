@@ -13,7 +13,6 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
-import api from '@/lib/api';
 
 type AdDetails = {
   id: string;
@@ -45,11 +44,37 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
   const [activeImg, setActiveImg] = useState(0);
 
   useEffect(() => {
-    api
-      .get(`/ads/${slug}`)
-      .then((r) => setAd(r.data))
-      .catch(() => setAd(null))
-      .finally(() => setLoading(false));
+    const run = async () => {
+      try {
+        const detailRes = await fetch(`/api/ads/${slug}`, { cache: 'no-store' });
+        if (detailRes.ok) {
+          const detailData = await detailRes.json();
+          setAd(detailData);
+          setLoading(false);
+          return;
+        }
+      } catch {
+        // Try list fallback below.
+      }
+
+      try {
+        // Fallback: if detail endpoint is unavailable, resolve ad from listing feed.
+        const listRes = await fetch('/api/ads?limit=100', { cache: 'no-store' });
+        if (!listRes.ok) {
+          setAd(null);
+          return;
+        }
+        const listData = (await listRes.json()) as AdDetails[];
+        const found = listData.find((item) => item.slug === slug) || null;
+        setAd(found);
+      } catch {
+        setAd(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    run();
   }, [slug]);
 
   if (loading) {
