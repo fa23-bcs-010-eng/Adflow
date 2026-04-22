@@ -329,7 +329,7 @@ export default function HomePage() {
 
           <div className="text-center md:text-left relative z-10 w-full">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-300 font-medium mb-4">
-              <BrainCircuit size={12} /> AI Architect & Engineer
+              <BrainCircuit size={12} /> AI Concepts
             </div>
             <h3 className="text-3xl font-black text-white mb-2">Hammad Raheel Sarwar</h3>
             <p className="text-lg text-cyan-300 font-medium mb-4">Founder & Lead Developer</p>
@@ -337,7 +337,7 @@ export default function HomePage() {
               Hammad Raheel Sarwar is a Full-Stack Developer and AI Solutions Engineer who engineered AdFlow from the ground up, combining modern Next.js architecture with optimized relational database design to deliver a high-performance sponsored listing platform.
               <br />
               <br />
-              He integrates advanced AI workflows for ad copy generation, customer support automation, and intelligent dashboard systems—helping businesses streamline operations and scale efficiently through smart, data-driven solutions.
+              He integrates advanced AI workflows for ad copy generation, customer support automation, and intelligent dashboard systems - helping businesses streamline operations and scale efficiently through smart, data-driven solutions.
             </p>
             <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">
               <div className="flex items-center gap-2 bg-gray-800/50 px-4 py-2 rounded-xl border border-gray-700/50 text-sm text-gray-200 shadow-inner">

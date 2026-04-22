@@ -69,6 +69,7 @@ graph TD
 
 ### 🛍️ Client & User Experience
 - **Smart Ad Discovery**: Browse, filter, and search for ads categorized by specific niches and cities.
+- **Buy & Sell Marketplace Flow**: Buyers can open ad details, add to cart, and place orders. Sellers can publish ads and track incoming orders.
 - **Dynamic Checkout Flow**: Tab-based payment gateway supporting multiple methodologies (Credit/Debit, Bank transfer, Mobile Wallet).
 - **Premium Packages**: Users can upgrade their ad visibility by purchasing standardized or premium packages.
 - **Client Dashboard**: Manage profiles, view ad metrics, track payments, and follow up on submitted ad statuses.
@@ -215,6 +216,21 @@ The application requires specific environment variables to bridge the frontend a
 | `NEXT_PUBLIC_SUPABASE_URL` | Same as Server URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same as Server Anon Key |
 | `NEXT_PUBLIC_CHATBOT_URL` | Optional chatbot URL reference (avoid localhost in production) |
+
+---
+
+## Marketplace Orders Setup
+
+To enable full buy/sell checkout flow in production, run:
+
+- `db/orders_migration.sql`
+
+This creates:
+- `orders`
+- `order_items`
+- `order_status_history`
+
+After migration, buyers can place orders from `/checkout` and sellers can review incoming product orders in the client dashboard Orders tab.
 
 ---
 

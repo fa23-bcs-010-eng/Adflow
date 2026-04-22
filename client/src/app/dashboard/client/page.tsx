@@ -16,6 +16,8 @@ import {
   ArrowRight,
   Sparkles,
   ShieldCheck,
+  ShoppingBag,
+  Store,
 } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
@@ -24,15 +26,18 @@ import { useAuth } from '@/lib/auth';
 import StatusBadge from '@/components/StatusBadge';
 import toast from 'react-hot-toast';
 
-type ClientTab = 'ads' | 'create' | 'notifications' | 'analytics' | 'settings' | 'billing';
+type ClientTab = 'ads' | 'create' | 'notifications' | 'analytics' | 'settings' | 'billing' | 'orders';
 
 export default function ClientDashboard() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [ads, setAds] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [buyingOrders, setBuyingOrders] = useState<any[]>([]);
+  const [sellingOrders, setSellingOrders] = useState<any[]>([]);
   const [tab, setTab] = useState<ClientTab>('ads');
   const [loading, setLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -64,17 +69,25 @@ export default function ClientDashboard() {
     if (typeof window === 'undefined') return;
     const tabParam = new URLSearchParams(window.location.search).get('tab');
     if (!tabParam) return;
-    if (['ads', 'create', 'notifications', 'analytics', 'settings', 'billing'].includes(tabParam)) {
+    if (['ads', 'create', 'notifications', 'analytics', 'settings', 'billing', 'orders'].includes(tabParam)) {
       setTab(tabParam as ClientTab);
     }
   }, []);
 
   useEffect(() => {
     if (!user) return;
-    Promise.all([api.get('/client/ads'), api.get('/client/notifications')])
-      .then(([a, n]) => {
-        setAds(a.data);
-        setNotifications(n.data);
+    Promise.allSettled([
+      api.get('/client/ads'),
+      api.get('/client/notifications'),
+      api.get('/client/orders?mode=buying'),
+      api.get('/client/orders?mode=selling'),
+    ])
+      .then(([a, n, buying, selling]) => {
+        setAds(a.status === 'fulfilled' ? a.value.data : []);
+        setNotifications(n.status === 'fulfilled' ? n.value.data : []);
+        setBuyingOrders(buying.status === 'fulfilled' ? buying.value.data : []);
+        setSellingOrders(selling.status === 'fulfilled' ? selling.value.data : []);
+        setOrdersLoading(false);
         setSettings((prev) => ({
           ...prev,
           full_name: user?.full_name || prev.full_name,
@@ -84,6 +97,9 @@ export default function ClientDashboard() {
       .catch(() => {
         setAds([]);
         setNotifications([]);
+        setBuyingOrders([]);
+        setSellingOrders([]);
+        setOrdersLoading(false);
       })
       .finally(() => setLoading(false));
   }, [user]);
@@ -196,6 +212,7 @@ export default function ClientDashboard() {
                 { key: 'ads', icon: LayoutDashboard, label: 'Dashboard' },
                 { key: 'create', icon: Megaphone, label: 'Campaigns' },
                 { key: 'notifications', icon: Users, label: 'Audience' },
+                { key: 'orders', icon: ShoppingBag, label: 'Orders' },
                 { key: 'ads-analytics', icon: ChartColumn, label: 'Analytics' },
                 { key: 'ads-settings', icon: Settings, label: 'Settings' },
                 { key: 'ads-billing', icon: CreditCard, label: 'Billing' },
@@ -205,6 +222,7 @@ export default function ClientDashboard() {
                   ads: 'ads',
                   create: 'create',
                   notifications: 'notifications',
+                  orders: 'orders',
                   'ads-analytics': 'analytics',
                   'ads-settings': 'settings',
                   'ads-billing': 'billing',
@@ -469,6 +487,81 @@ export default function ClientDashboard() {
                     </div>
                   ))
                 )}
+              </div>
+            )}
+
+            {tab === 'orders' && (
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="kpi-card">
+                    <p className="text-xs text-slate-300/60 mb-1">Buying Orders</p>
+                    <p className="text-3xl font-black text-white">{buyingOrders.length}</p>
+                  </div>
+                  <div className="kpi-card">
+                    <p className="text-xs text-slate-300/60 mb-1">Selling Orders</p>
+                    <p className="text-3xl font-black text-cyan-300">{sellingOrders.length}</p>
+                  </div>
+                  <div className="kpi-card">
+                    <p className="text-xs text-slate-300/60 mb-1">Pending Orders</p>
+                    <p className="text-3xl font-black text-amber-300">
+                      {buyingOrders.filter((order) => order.status === 'placed').length}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  <div className="card p-5">
+                    <h2 className="panel-title text-lg mb-4 inline-flex items-center gap-2">
+                      <ShoppingBag size={16} /> My Purchases
+                    </h2>
+                    {ordersLoading ? (
+                      <p className="text-slate-400 text-sm">Loading buying orders...</p>
+                    ) : buyingOrders.length === 0 ? (
+                      <p className="text-slate-400 text-sm">No purchases yet. Buy from Explore Ads marketplace.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {buyingOrders.slice(0, 8).map((order) => (
+                          <div key={order.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                            <div className="flex items-center justify-between gap-3 mb-2">
+                              <p className="text-sm font-semibold text-white">Order #{String(order.id).slice(0, 8)}</p>
+                              <span className="text-xs text-cyan-300 capitalize">{order.status}</span>
+                            </div>
+                            <p className="text-xs text-slate-400">
+                              Total: PKR {Number(order.total_amount || 0).toLocaleString()} | Items: {(order.items || []).length}
+                            </p>
+                            <p className="text-xs text-slate-500 mt-1">{new Date(order.created_at).toLocaleString()}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="card p-5">
+                    <h2 className="panel-title text-lg mb-4 inline-flex items-center gap-2">
+                      <Store size={16} /> Orders On My Ads
+                    </h2>
+                    {ordersLoading ? (
+                      <p className="text-slate-400 text-sm">Loading selling orders...</p>
+                    ) : sellingOrders.length === 0 ? (
+                      <p className="text-slate-400 text-sm">No buyer orders on your ads yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {sellingOrders.slice(0, 8).map((item) => (
+                          <div key={item.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                            <div className="flex items-center justify-between gap-3 mb-2">
+                              <p className="text-sm font-semibold text-white line-clamp-1">{item.ad_title}</p>
+                              <span className="text-xs text-cyan-300">x{item.quantity}</span>
+                            </div>
+                            <p className="text-xs text-slate-400">
+                              Buyer: {item.buyer?.full_name || item.buyer?.email || 'Unknown'} | PKR {Number(item.total_price || 0).toLocaleString()}
+                            </p>
+                            <p className="text-xs text-slate-500 mt-1">{new Date(item.created_at).toLocaleString()}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 

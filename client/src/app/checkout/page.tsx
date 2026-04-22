@@ -1,18 +1,23 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CreditCard, ShoppingCart, Trash2, ArrowLeft, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/lib/auth';
 import { useCart } from '@/lib/cart';
+import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { items, removeItem, clearCart, totalPrice, itemCount } = useCart();
 
-  const handleConfirmPurchase = () => {
+  const [placingOrder, setPlacingOrder] = useState(false);
+
+  const handleConfirmPurchase = async () => {
     if (!user) {
       toast.error('Please login first to complete purchase.');
       router.push('/auth/login?next=%2Fcheckout');
@@ -23,9 +28,23 @@ export default function CheckoutPage() {
       return;
     }
 
-    toast.success('Purchase request submitted successfully.');
-    clearCart();
-    router.push('/explore');
+    setPlacingOrder(true);
+    try {
+      await api.post('/client/orders', {
+        items: items.map((item) => ({
+          ad_id: item.id,
+          quantity: item.qty,
+          unit_price: item.price,
+        })),
+      });
+      toast.success('Order placed successfully.');
+      clearCart();
+      router.push('/dashboard/client?tab=orders');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to place order'));
+    } finally {
+      setPlacingOrder(false);
+    }
   };
 
   return (
@@ -114,9 +133,9 @@ export default function CheckoutPage() {
             type="button"
             onClick={handleConfirmPurchase}
             className="btn-primary w-full inline-flex items-center justify-center gap-2"
-            disabled={items.length === 0}
+            disabled={items.length === 0 || placingOrder}
           >
-            <CreditCard size={15} /> Confirm Purchase
+            <CreditCard size={15} /> {placingOrder ? 'Placing Order...' : 'Confirm Purchase'}
           </button>
 
           <div className="mt-3 text-xs text-slate-400 inline-flex items-center gap-1">
