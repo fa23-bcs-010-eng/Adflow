@@ -1,10 +1,8 @@
 import axios from 'axios';
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || '';
-const normalizedApiUrl = rawApiUrl.replace(/\/+$/, '');
-const baseURL = normalizedApiUrl
-  ? `${normalizedApiUrl.endsWith('/api') ? normalizedApiUrl : `${normalizedApiUrl}/api`}`
-  : '/api';
+// Always use local Next.js API routes from the browser.
+// Server-side proxying to external services is handled by /api/[...path] route.
+const baseURL = '/api';
 
 const api = axios.create({
   baseURL,
