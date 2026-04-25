@@ -41,6 +41,7 @@ export default function ClientDashboard() {
   const router = useRouter();
   const [ads, setAds] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [savedSearches, setSavedSearches] = useState<any[]>([]);
   const [buyingOrders, setBuyingOrders] = useState<any[]>([]);
   const [sellingOrders, setSellingOrders] = useState<any[]>([]);
   const [sentOffers, setSentOffers] = useState<any[]>([]);
@@ -97,6 +98,7 @@ export default function ClientDashboard() {
     Promise.allSettled([
       api.get('/client/ads'),
       api.get('/client/notifications'),
+      api.get('/client/saved-searches'),
       api.get('/client/orders?mode=buying'),
       api.get('/client/orders?mode=selling'),
       api.get('/client/offers?mode=sent'),
@@ -104,9 +106,10 @@ export default function ClientDashboard() {
       api.get('/client/analytics'),
       api.get('/client/promotions'),
     ])
-      .then(([a, n, buying, selling, sent, received, analyticsRes, promotionsRes]) => {
+      .then(([a, n, saved, buying, selling, sent, received, analyticsRes, promotionsRes]) => {
         setAds(a.status === 'fulfilled' ? a.value.data : []);
         setNotifications(n.status === 'fulfilled' ? n.value.data : []);
+        setSavedSearches(saved.status === 'fulfilled' ? saved.value.data : []);
         setBuyingOrders(buying.status === 'fulfilled' ? buying.value.data : []);
         setSellingOrders(selling.status === 'fulfilled' ? selling.value.data : []);
         setSentOffers(sent.status === 'fulfilled' ? sent.value.data : []);
@@ -123,6 +126,7 @@ export default function ClientDashboard() {
       .catch(() => {
         setAds([]);
         setNotifications([]);
+        setSavedSearches([]);
         setBuyingOrders([]);
         setSellingOrders([]);
         setSentOffers([]);
@@ -141,6 +145,16 @@ export default function ClientDashboard() {
     const pendingPayments = ads.filter((a) => ['draft', 'submitted', 'payment_pending'].includes(a.status)).length;
     return { total: ads.length, active, spent, published, pendingPayments };
   }, [ads]);
+
+  const isBuyerAccount = user?.role === 'client' && user?.account_type === 'buyer';
+  const isSellerAccount = user?.role !== 'client' || user?.account_type !== 'buyer';
+
+  useEffect(() => {
+    if (!isBuyerAccount) return;
+    if (['create', 'analytics', 'billing'].includes(tab)) {
+      setTab('ads');
+    }
+  }, [isBuyerAccount, tab]);
 
   const checkoutAdId = useMemo(
     () => ads.find((ad) => ['draft', 'submitted', 'payment_pending'].includes(ad.status))?.id || null,
@@ -398,16 +412,16 @@ export default function ClientDashboard() {
               <p className="text-xs text-slate-300/60">Client Workspace</p>
             </div>
             <div className="space-y-1 text-sm">
-                {[
-                  { key: 'ads', icon: LayoutDashboard, label: 'Dashboard' },
-                  { key: 'create', icon: Megaphone, label: 'Campaigns' },
-                  { key: 'notifications', icon: Users, label: 'Audience' },
-                  { key: 'orders', icon: ShoppingBag, label: 'Orders' },
-                  { key: 'offers', icon: MessageSquare, label: 'Offers' },
-                  { key: 'ads-analytics', icon: ChartColumn, label: 'Analytics' },
-                  { key: 'ads-settings', icon: Settings, label: 'Settings' },
-                  { key: 'ads-billing', icon: CreditCard, label: 'Billing' },
-              ].map((item) => {
+              {[
+                { key: 'ads', icon: LayoutDashboard, label: isBuyerAccount ? 'Buyer Home' : 'Dashboard', visible: true },
+                { key: 'create', icon: Megaphone, label: 'Campaigns', visible: isSellerAccount },
+                { key: 'notifications', icon: Users, label: isBuyerAccount ? 'Alerts' : 'Audience', visible: true },
+                { key: 'orders', icon: ShoppingBag, label: 'Orders', visible: true },
+                { key: 'offers', icon: MessageSquare, label: 'Offers', visible: true },
+                { key: 'ads-analytics', icon: ChartColumn, label: 'Analytics', visible: isSellerAccount },
+                { key: 'ads-settings', icon: Settings, label: 'Settings', visible: true },
+                { key: 'ads-billing', icon: CreditCard, label: 'Billing', visible: isSellerAccount },
+              ].filter((item) => item.visible).map((item) => {
                 const Icon = item.icon;
                 const mappedTab: Record<string, ClientTab> = {
                   ads: 'ads',
@@ -441,12 +455,20 @@ export default function ClientDashboard() {
           <section className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h1 className="text-2xl font-bold text-slate-100">Dashboard Overview</h1>
-                <p className="text-sm text-slate-300/70">Welcome, {user?.full_name}</p>
+                <h1 className="text-2xl font-bold text-slate-100">{isBuyerAccount ? 'Buyer Workspace' : 'Dashboard Overview'}</h1>
+                <p className="text-sm text-slate-300/70">
+                  Welcome, {user?.full_name}{user?.role === 'client' ? ` | ${isBuyerAccount ? 'Buyer' : 'Seller'} account` : ''}
+                </p>
               </div>
-              <button onClick={() => setTab('create')} className="btn-primary text-sm inline-flex items-center gap-2">
-                <Plus size={14} /> New Ad
-              </button>
+              {isSellerAccount ? (
+                <button onClick={() => setTab('create')} className="btn-primary text-sm inline-flex items-center gap-2">
+                  <Plus size={14} /> New Ad
+                </button>
+              ) : (
+                <Link href="/explore" className="btn-primary text-sm inline-flex items-center gap-2">
+                  <ShoppingBag size={14} /> Start Buying
+                </Link>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -582,69 +604,119 @@ export default function ClientDashboard() {
             )}
 
             {tab === 'ads' && (
-              <div className="card p-4">
-                <h2 className="panel-title text-lg mb-3">Recent Ads</h2>
-                {ads.length === 0 ? (
-                  <div className="text-center text-slate-300/70 py-10">No ads yet. Create your first campaign.</div>
-                ) : (
-                  <div className="overflow-auto">
-                    <table className="w-full text-sm min-w-[740px]">
-                      <thead className="text-slate-300/65 border-b border-slate-700">
-                        <tr>
-                          <th className="text-left py-2">Ad Name</th>
-                          <th className="text-left py-2">Status</th>
-                          <th className="text-left py-2">Impressions</th>
-                          <th className="text-left py-2">Spend</th>
-                          <th className="text-left py-2">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {ads.slice(0, 8).map((ad) => (
-                          <tr key={ad.id} className="border-b border-slate-800/70 text-slate-100/90">
-                            <td className="py-2.5">{ad.title}</td>
-                            <td className="py-2.5"><StatusBadge status={ad.status} /></td>
-                            <td className="py-2.5">{ad.view_count || 0}</td>
-                            <td className="py-2.5">${Number(ad.package?.price || 0).toFixed(2)}</td>
-                            <td className="py-2.5">
-                              <div className="flex items-center gap-2">
-                                {ad.status === 'draft' && (
-                                  <button onClick={() => handleSubmitAd(ad.id)} className="btn-primary text-xs !py-1.5 !px-2.5 inline-flex items-center gap-1">
-                                    <Send size={11} /> Publish
-                                  </button>
-                                )}
-                                {['draft', 'submitted', 'payment_pending'].includes(ad.status) && (
-                                  <Link href={`/dashboard/client/pay?ad=${ad.id}`} className="btn-secondary text-xs !py-1.5 !px-2.5">
-                                    Buy Package
-                                  </Link>
-                                )}
-                                {ad.status === 'published' && ad.slug && (
-                                  <>
-                                    <Link href={`/ads/${ad.slug}`} className="text-cyan-300 hover:underline text-xs">
-                                      View
-                                    </Link>
-                                    <button onClick={() => handlePromotion(ad.id, 'boost')} className="btn-secondary text-xs !py-1.5 !px-2.5 inline-flex items-center gap-1">
-                                      <Rocket size={11} /> Boost
-                                    </button>
-                                    <button onClick={() => handlePromotion(ad.id, 'urgent')} className="btn-secondary text-xs !py-1.5 !px-2.5 inline-flex items-center gap-1">
-                                      <Siren size={11} /> Urgent
-                                    </button>
-                                    <button onClick={() => handlePromotion(ad.id, 'top_search')} className="btn-secondary text-xs !py-1.5 !px-2.5 inline-flex items-center gap-1">
-                                      <SearchCheck size={11} /> Top Search
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+              isBuyerAccount ? (
+                <div className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="kpi-card">
+                      <p className="text-xs text-slate-300/60 mb-1">Saved Alerts</p>
+                      <p className="text-3xl font-black text-white">{savedSearches.length}</p>
+                    </div>
+                    <div className="kpi-card">
+                      <p className="text-xs text-slate-300/60 mb-1">My Purchases</p>
+                      <p className="text-3xl font-black text-cyan-300">{buyingOrders.length}</p>
+                    </div>
+                    <div className="kpi-card">
+                      <p className="text-xs text-slate-300/60 mb-1">Offers Sent</p>
+                      <p className="text-3xl font-black text-amber-300">{sentOffers.length}</p>
+                    </div>
                   </div>
-                )}
-              </div>
+
+                  <div className="card p-5">
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                      <h2 className="panel-title text-lg">Buyer Quick Actions</h2>
+                      <Link href="/explore" className="text-cyan-300 hover:underline text-sm">Explore listings</Link>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                        <p className="text-sm font-semibold text-white mb-2">Saved Search Alerts</p>
+                        {savedSearches.length === 0 ? (
+                          <p className="text-sm text-slate-400">No saved alerts yet. Save a search from Explore to get instant matching updates.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {savedSearches.slice(0, 4).map((item) => (
+                              <div key={item.id} className="text-sm text-slate-200">
+                                {(item.query || 'Any')} | {item.category_slug || 'all-categories'} | {item.city_slug || 'all-cities'}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                        <p className="text-sm font-semibold text-white mb-2">Recent Buyer Activity</p>
+                        <div className="space-y-2 text-sm text-slate-300">
+                          <p>Purchases placed: {buyingOrders.length}</p>
+                          <p>Offers in negotiation: {sentOffers.filter((item) => ['pending', 'countered'].includes(String(item.status))).length}</p>
+                          <p>Unread alerts: {notifications.filter((item) => !item.is_read).length}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="card p-4">
+                  <h2 className="panel-title text-lg mb-3">Recent Ads</h2>
+                  {ads.length === 0 ? (
+                    <div className="text-center text-slate-300/70 py-10">No ads yet. Create your first campaign.</div>
+                  ) : (
+                    <div className="overflow-auto">
+                      <table className="w-full text-sm min-w-[740px]">
+                        <thead className="text-slate-300/65 border-b border-slate-700">
+                          <tr>
+                            <th className="text-left py-2">Ad Name</th>
+                            <th className="text-left py-2">Status</th>
+                            <th className="text-left py-2">Impressions</th>
+                            <th className="text-left py-2">Spend</th>
+                            <th className="text-left py-2">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {ads.slice(0, 8).map((ad) => (
+                            <tr key={ad.id} className="border-b border-slate-800/70 text-slate-100/90">
+                              <td className="py-2.5">{ad.title}</td>
+                              <td className="py-2.5"><StatusBadge status={ad.status} /></td>
+                              <td className="py-2.5">{ad.view_count || 0}</td>
+                              <td className="py-2.5">${Number(ad.package?.price || 0).toFixed(2)}</td>
+                              <td className="py-2.5">
+                                <div className="flex items-center gap-2">
+                                  {ad.status === 'draft' && (
+                                    <button onClick={() => handleSubmitAd(ad.id)} className="btn-primary text-xs !py-1.5 !px-2.5 inline-flex items-center gap-1">
+                                      <Send size={11} /> Publish
+                                    </button>
+                                  )}
+                                  {['draft', 'submitted', 'payment_pending'].includes(ad.status) && (
+                                    <Link href={`/dashboard/client/pay?ad=${ad.id}`} className="btn-secondary text-xs !py-1.5 !px-2.5">
+                                      Buy Package
+                                    </Link>
+                                  )}
+                                  {ad.status === 'published' && ad.slug && (
+                                    <>
+                                      <Link href={`/ads/${ad.slug}`} className="text-cyan-300 hover:underline text-xs">
+                                        View
+                                      </Link>
+                                      <button onClick={() => handlePromotion(ad.id, 'boost')} className="btn-secondary text-xs !py-1.5 !px-2.5 inline-flex items-center gap-1">
+                                        <Rocket size={11} /> Boost
+                                      </button>
+                                      <button onClick={() => handlePromotion(ad.id, 'urgent')} className="btn-secondary text-xs !py-1.5 !px-2.5 inline-flex items-center gap-1">
+                                        <Siren size={11} /> Urgent
+                                      </button>
+                                      <button onClick={() => handlePromotion(ad.id, 'top_search')} className="btn-secondary text-xs !py-1.5 !px-2.5 inline-flex items-center gap-1">
+                                        <SearchCheck size={11} /> Top Search
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )
             )}
 
-            {tab === 'create' && (
+            {tab === 'create' && isSellerAccount && (
               <div className="card p-5">
                 <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
                   <h2 className="panel-title text-lg">Create New Ad</h2>
@@ -1029,7 +1101,7 @@ export default function ClientDashboard() {
               </div>
             )}
 
-            {tab === 'billing' && (
+            {tab === 'billing' && isSellerAccount && (
               <div className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="kpi-card">

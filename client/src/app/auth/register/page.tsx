@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 export default function RegisterPage() {
   const { register } = useAuth();
   const router = useRouter();
-  const [form, setForm] = useState({ full_name: '', email: '', password: '', role: 'client' });
+  const [form, setForm] = useState({ full_name: '', email: '', password: '', role: 'client', account_type: 'seller' as 'buyer' | 'seller' });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,10 +34,33 @@ export default function RegisterPage() {
             <Zap size={24} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">Create your account</h1>
-          <p className="text-gray-500 text-sm mt-1">Start posting ads or managing the platform</p>
+          <p className="text-gray-500 text-sm mt-1">Join as a buyer or seller and unlock the right marketplace tools</p>
         </div>
         <div className="card p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="label">Account Type</label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'buyer', title: 'Buyer', description: 'Purchase, save, offer, and chat' },
+                  { value: 'seller', title: 'Seller', description: 'Post, promote, sell, and manage ads' },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setForm({ ...form, role: 'client', account_type: option.value as 'buyer' | 'seller' })}
+                    className={`rounded-xl border px-4 py-3 text-left transition ${
+                      form.account_type === option.value
+                        ? 'border-cyan-400 bg-cyan-500/10 text-cyan-100'
+                        : 'border-white/10 bg-white/5 text-slate-300 hover:border-white/20'
+                    }`}
+                  >
+                    <p className="font-semibold">{option.title}</p>
+                    <p className="text-xs text-slate-400 mt-1">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
             <div>
               <label className="label">Full Name</label>
               <input id="reg-name" type="text" className="input" placeholder="Ahmed Khan"
@@ -52,15 +75,6 @@ export default function RegisterPage() {
               <label className="label">Password</label>
               <input id="reg-password" type="password" className="input" placeholder="Min 8 characters"
                 value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required minLength={8} />
-            </div>
-            <div>
-              <label className="label">Select Role</label>
-              <select className="input" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-                <option value="client">Client (Post Ads)</option>
-                <option value="moderator">Moderator (Review Ads)</option>
-                <option value="admin">Admin (Publish & Finances)</option>
-                <option value="super_admin">Super Admin (Full Access)</option>
-              </select>
             </div>
             <button id="reg-submit" type="submit" disabled={loading} className="btn-primary w-full flex justify-center mt-2">
               {loading ? 'Creating account...' : 'Create Account'}

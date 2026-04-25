@@ -9,6 +9,7 @@ const registerSchema = z.object({
   email: z.string().email('Invalid email'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   role: z.enum(['client', 'moderator', 'admin', 'super_admin']).optional().default('client'),
+  account_type: z.enum(['buyer', 'seller']).optional().default('seller'),
 });
 
 export const dynamic = 'force-dynamic';
@@ -41,15 +42,16 @@ export async function POST(request: NextRequest) {
         email: body.email,
         password_hash,
         role: body.role,
+        account_type: body.role === 'client' ? body.account_type : null,
       })
-      .select('id, email, full_name, role')
+      .select('id, email, full_name, role, account_type')
       .single();
 
     if (error || !user) {
       return NextResponse.json({ error: error?.message || 'Failed to create user' }, { status: 500 });
     }
 
-    if (body.role === 'client') {
+    if (body.role === 'client' && body.account_type === 'seller') {
       await supabaseAdmin.from('seller_profiles').insert({ user_id: user.id });
     }
 

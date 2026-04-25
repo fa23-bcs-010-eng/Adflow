@@ -4,6 +4,7 @@ type AuthUser = {
   id: string;
   email: string;
   role: string;
+  account_type?: string | null;
 };
 
 export function issueToken(user: AuthUser) {
@@ -14,7 +15,7 @@ export function issueToken(user: AuthUser) {
   }
 
   return jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
+    { id: user.id, email: user.email, role: user.role, account_type: user.account_type || null },
     secret,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
@@ -24,6 +25,7 @@ type TokenPayload = {
   id: string;
   email: string;
   role: string;
+  account_type?: string | null;
 };
 
 export function verifyToken(token: string): TokenPayload {
@@ -46,5 +48,6 @@ export function verifyToken(token: string): TokenPayload {
     id: payload.id,
     email: payload.email,
     role: payload.role,
+    account_type: payload.account_type || null,
   };
 }

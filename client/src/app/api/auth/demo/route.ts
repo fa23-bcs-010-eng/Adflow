@@ -5,7 +5,7 @@ import { issueToken } from '@/lib/server/auth';
 import { getSupabaseAdmin } from '@/lib/server/supabase';
 
 const demoSchema = z.object({
-  role: z.enum(['client', 'moderator', 'admin', 'super_admin']),
+  role: z.enum(['client', 'moderator', 'admin', 'super_admin', 'buyer', 'seller']),
 });
 
 export const dynamic = 'force-dynamic';
@@ -14,11 +14,13 @@ export async function POST(request: NextRequest) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     const { role } = demoSchema.parse(await request.json());
+    const mappedRole = role === 'buyer' || role === 'seller' ? 'client' : role;
+    const accountType = role === 'buyer' || role === 'seller' ? role : null;
     const email = `${role}_demo@adflow.com`;
 
     let { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('id, email, full_name, role')
+      .select('id, email, full_name, role, account_type')
       .eq('email', email)
       .maybeSingle();
 
@@ -30,8 +32,8 @@ export async function POST(request: NextRequest) {
       const password_hash = await bcrypt.hash('demo123', 12);
       const created = await supabaseAdmin
         .from('users')
-        .insert({ full_name: `Demo ${role.toUpperCase()}`, email, password_hash, role })
-        .select('id, email, full_name, role')
+        .insert({ full_name: `Demo ${role.toUpperCase()}`, email, password_hash, role: mappedRole, account_type: accountType })
+        .select('id, email, full_name, role, account_type')
         .single();
 
       if (created.error || !created.data) {
@@ -39,7 +41,7 @@ export async function POST(request: NextRequest) {
       }
 
       user = created.data;
-      if (role === 'client') {
+      if (accountType === 'seller' || role === 'client') {
         await supabaseAdmin.from('seller_profiles').insert({ user_id: user.id });
       }
     }

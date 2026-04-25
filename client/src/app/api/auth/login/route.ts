@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('id, email, full_name, role, password_hash, is_active')
+      .select('id, email, full_name, role, account_type, password_hash, is_active')
       .eq('email', body.email)
       .maybeSingle();
 
@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
       full_name: user.full_name,
       role: user.role,
+      account_type: user.account_type || null,
     };
 
     return NextResponse.json({

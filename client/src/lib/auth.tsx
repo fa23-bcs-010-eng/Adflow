@@ -8,13 +8,14 @@ interface User {
   email: string;
   full_name: string;
   role: 'client' | 'moderator' | 'admin' | 'super_admin';
+  account_type?: 'buyer' | 'seller' | null;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: { full_name: string; email: string; password: string; role?: string }) => Promise<void>;
+  register: (data: { full_name: string; email: string; password: string; role?: string; account_type?: 'buyer' | 'seller' }) => Promise<void>;
   demoLogin: (role: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
@@ -45,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(data.user);
   };
 
-  const register = async (body: { full_name: string; email: string; password: string; role?: string }) => {
+  const register = async (body: { full_name: string; email: string; password: string; role?: string; account_type?: 'buyer' | 'seller' }) => {
     const { data } = await api.post('/auth/register', body);
     localStorage.setItem('ag_token', data.token);
     localStorage.setItem('ag_user', JSON.stringify(data.user));

@@ -48,6 +48,9 @@ export async function POST(request: NextRequest) {
   if (!['client', 'super_admin'].includes(user.role)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
+  if (user.role === 'client' && user.account_type === 'buyer') {
+    return NextResponse.json({ error: 'Only seller accounts can create ads' }, { status: 403 });
+  }
 
   try {
     const supabaseAdmin = getSupabaseAdmin();

@@ -8,19 +8,21 @@ import { getErrorMessage } from '@/lib/errors';
 import { Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-type DemoRole = 'client' | 'moderator' | 'admin' | 'super_admin';
+type DemoRole = 'buyer' | 'seller' | 'moderator' | 'admin' | 'super_admin';
 
-const DEMO_ROLES: DemoRole[] = ['client', 'moderator', 'admin', 'super_admin'];
+const DEMO_ROLES: DemoRole[] = ['buyer', 'seller', 'moderator', 'admin', 'super_admin'];
 
 const roleDashboard: Record<DemoRole, string> = {
-  client: '/dashboard/client',
+  buyer: '/dashboard/client',
+  seller: '/dashboard/client',
   moderator: '/dashboard/moderator',
   admin: '/dashboard/admin',
   super_admin: '/dashboard/admin',
 };
 
 const roleDemoEmail: Record<DemoRole, string> = {
-  client: 'client_demo@adflow.com',
+  buyer: 'buyer_demo@adflow.com',
+  seller: 'seller_demo@adflow.com',
   moderator: 'moderator_demo@adflow.com',
   admin: 'admin_demo@adflow.com',
   super_admin: 'super_admin_demo@adflow.com',
@@ -84,7 +86,7 @@ export default function LoginPage() {
             <Zap size={24} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">Sign in to AdFlow Pro</h1>
-          <p className="text-gray-500 text-sm mt-1">Welcome back - let&apos;s get you listed</p>
+          <p className="text-gray-500 text-sm mt-1">Buyer and seller accounts open different marketplace tools after login</p>
         </div>
 
         <div className="card p-8">
@@ -140,9 +142,9 @@ export default function LoginPage() {
                   key={role}
                   className="rounded-xl border border-gray-700 bg-gray-900/60 p-3 text-sm"
                 >
-                  <p className="text-gray-300 font-semibold uppercase tracking-wide mb-1">
+                    <p className="text-gray-300 font-semibold uppercase tracking-wide mb-1">
                     {role.replace('_', ' ')} Demo
-                  </p>
+                    </p>
                   <p className="text-gray-400">
                     <span className="text-gray-300 font-medium">Gmail:</span> {roleDemoEmail[role]}
                   </p>

@@ -17,6 +17,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!['client', 'super_admin'].includes(user.role)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
+  if (user.role === 'client' && user.account_type === 'buyer') {
+    return NextResponse.json({ error: 'Only seller accounts can publish ads' }, { status: 403 });
+  }
 
   const { id } = await params;
   const supabaseAdmin = getSupabaseAdmin();

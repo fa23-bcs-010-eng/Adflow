@@ -45,6 +45,9 @@ export async function POST(request: NextRequest) {
   if (!['client', 'admin', 'super_admin'].includes(user.role)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
+  if (user.role === 'client' && user.account_type === 'buyer') {
+    return NextResponse.json({ error: 'Only seller accounts can promote ads' }, { status: 403 });
+  }
 
   try {
     const body = createPromotionSchema.parse(await request.json());
