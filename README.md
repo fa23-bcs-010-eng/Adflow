@@ -1,106 +1,165 @@
 <div align="center">
-  <h1>🚀 Adflow Pro</h1>
-  <p><strong>A Comprehensive Full-Stack Digital Marketplace & Advertising Platform</strong></p>
-  
-  <p>
-    <img src="https://img.shields.io/badge/Next.js-14+-black?style=for-the-badge&logo=next.js" alt="Next.js" />
-    <img src="https://img.shields.io/badge/Node.js-Express-green?style=for-the-badge&logo=node.js" alt="Node.js" />
-    <img src="https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase" alt="Supabase" />
-    <img src="https://img.shields.io/badge/MongoDB-Mongoose-13aa52?style=for-the-badge&logo=mongodb" alt="MongoDB" />
-    <img src="https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS" />
-  </p>
+
+<h1>⚡ Adflow Pro</h1>
+
+<p><strong>A Full-Stack Digital Marketplace & Classified Advertising Platform</strong></p>
+
+<p>
+  <img src="https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React 19" />
+  <img src="https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind-CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Python-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Gemini-AI-8E75B2?style=for-the-badge&logo=google&logoColor=white" alt="Gemini AI" />
+</p>
+
+<p>
+  <a href="https://adflowpro-kappa.vercel.app/" target="_blank"><strong>🌐 Live Demo</strong></a> &nbsp;·&nbsp;
+  <a href="https://github.com/fa23-bcs-010-eng/Adflow/raw/main/Adflow.apk"><strong>📱 Download APK</strong></a> &nbsp;·&nbsp;
+  <a href="#-getting-started"><strong>🚀 Quick Start</strong></a>
+</p>
+
 </div>
 
-## Live Demo
+---
 
-Check live project: [https://adflowpro-kappa.vercel.app/](https://adflowpro-kappa.vercel.app/)
+## 📌 Table of Contents
 
-### APK Download
-
-Download Android app: [Adflow.apk](https://github.com/fa23-bcs-010-eng/Adflow/raw/main/Adflow.apk)
-
-### Demo Logins
-
-Use these demo credentials on the login page:
-
-| Role | Demo Gmail | Demo Password |
-| :--- | :--- | :--- |
-| Client | `client_demo@adflow.com` | `demo123` |
-| Moderator | `moderator_demo@adflow.com` | `demo123` |
-| Admin | `admin_demo@adflow.com` | `demo123` |
-| Super Admin | `super_admin_demo@adflow.com` | `demo123` |
+- [Overview](#-overview)
+- [Live Demo & Credentials](#-live-demo--credentials)
+- [Core Workflow](#-core-workflow--ad-lifecycle)
+- [Key Features](#-key-features)
+- [Subscription Packages](#-subscription-packages)
+- [Technology Stack](#️-technology-stack)
+- [Project Structure](#-project-structure)
+- [Architecture & RBAC](#️-architecture--role-based-access-control)
+- [Database Setup](#️-database-setup)
+- [Environment Variables](#️-environment-variables)
+- [Getting Started](#-getting-started)
+- [Deployment](#-deployment)
+- [API Reference](#-api-reference)
+- [Author](#-author)
 
 ---
 
 ## 📖 Overview
 
-**Adflow Pro** is a modern, responsive, and robust digital marketplace where users can browse, post, and manage classified ads. The platform features an advanced **Product Requirements Document (PRD) compliant** payment and checkout system, dynamic package selections, and highly segregated dashboards tailored for **Clients**, **Moderators**, and **Admins**. 
+**Adflow Pro** is a production-ready, full-stack classified advertising and digital marketplace platform. It enables users to browse, post, and manage ads with an end-to-end workflow covering payment verification, content moderation, and order fulfillment.
 
-This system was designed with scale, performance, and best engineering practices in mind, utilizing a Next.js App Router frontend and an Express.js/Node backend.
+The platform is built with a **monorepo architecture**, separating a **Next.js 16 / React 19** frontend from a **Node.js / Express.js** backend, both powered by **Supabase (PostgreSQL)** as the primary database. An integrated **Python FastAPI** microservice provides AI-powered assistant capabilities via **Google Gemini 2.5 Flash** through the **Google ADK**.
+
+### What makes Adflow Pro stand out:
+- 🔄 **Full Ad Lifecycle** — from draft to live, with manual payment verification and content moderation gates
+- 🤖 **Built-in AI Assistant** — floating chat widget backed by a Google ADK agent with Gemini fallback
+- 🛡️ **Enterprise RBAC** — four role tiers: Client, Moderator, Admin, Super Admin
+- 📦 **4-Tier Subscription Model** — Free through Enterprise with feature gating
+- 🏪 **Marketplace Checkout** — buyers can cart and purchase ads; sellers track incoming orders
+- 📊 **Multi-phase DB Schema** — modular SQL migrations for Marketplace, Business Growth, and Pro features
+- 📱 **Android APK** — mobile build available for direct download
 
 ---
 
-## 🔄 Core Workflow: Ad Lifecycle
+## 🌐 Live Demo & Credentials
 
-The diagram below illustrates the comprehensive journey of an advertisement from initial creation to publication, including the manual payment verification and moderation steps.
+**Live Platform:** [https://adflowpro-kappa.vercel.app/](https://adflowpro-kappa.vercel.app/)
+
+Use the following demo accounts to explore each portal:
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| 👤 Client | `client_demo@adflow.com` | `demo123` |
+| 🛡️ Moderator | `moderator_demo@adflow.com` | `demo123` |
+| ⚙️ Admin | `admin_demo@adflow.com` | `demo123` |
+| 👑 Super Admin | `super_admin_demo@adflow.com` | `demo123` |
+
+---
+
+## 🔄 Core Workflow — Ad Lifecycle
 
 ```mermaid
 graph TD
-    A[User Creates Ad] --> B{Choose Package}
-    B --> C[Draft/Submitted]
-    C --> D[Payment Pending]
-    D --> E[User Uploads Proof]
-    E --> F[Payment Submitted]
-    F --> G{Admin Verifies Payment}
-    G -- Rejected --> D
-    G -- Verified --> H[Under Review]
-    H --> I{Moderator Reviews Content}
-    I -- Rejected --> J[Rejected/Draft]
-    I -- Approved --> K[Published & Live 🚀]
-    
+    A[👤 User Creates Ad] --> B{Choose Package}
+    B --> C[📝 Draft / Submitted]
+    C --> D[💳 Payment Pending]
+    D --> E[📤 User Uploads Proof]
+    E --> F[🕐 Payment Submitted]
+    F --> G{⚙️ Admin Verifies Payment}
+    G -- ❌ Rejected --> D
+    G -- ✅ Verified --> H[📋 Under Review]
+    H --> I{🛡️ Moderator Reviews}
+    I -- ❌ Rejected --> J[🚫 Rejected / Draft]
+    I -- ✅ Approved --> K[🚀 Published & Live]
+
     style K fill:#2ecc71,stroke:#27ae60,color:#fff
-    style G fill:#f1c40f,stroke:#f39c12
-    style I fill:#f1c40f,stroke:#f39c12
+    style A fill:#3498db,stroke:#2980b9,color:#fff
+    style G fill:#f39c12,stroke:#d35400,color:#fff
+    style I fill:#9b59b6,stroke:#8e44ad,color:#fff
+    style J fill:#e74c3c,stroke:#c0392b,color:#fff
 ```
 
 ---
 
 ## ✨ Key Features
 
-### 🛍️ Client & User Experience
-- **Smart Ad Discovery**: Browse, filter, and search for ads categorized by specific niches and cities.
-- **Buy & Sell Marketplace Flow**: Buyers can open ad details, add to cart, and place orders. Sellers can publish ads and track incoming orders.
-- **Business Growth Layer**: Seller reviews, conversion analytics, complaint handling, promotions, and SEO marketplace pages now support real marketplace growth workflows.
-- **Pro Marketplace Layer**: Escrow hold and release, shipment tracking, fraud risk scoring, AI pricing guidance, and AI auto-moderation bring enterprise-grade controls into the listing workflow.
-- **Dynamic Checkout Flow**: Tab-based payment gateway supporting multiple methodologies (Credit/Debit, Bank transfer, Mobile Wallet).
-- **Premium Packages**: Users can upgrade their ad visibility by purchasing standardized or premium packages.
-- **Client Dashboard**: Manage profiles, view ad metrics, track payments, and follow up on submitted ad statuses.
-- **Secure Authentication**: JWT-based sign-up and login tightly integrated with Supabase.
+### 🛍️ Client & Marketplace Experience
+| Feature | Description |
+| :--- | :--- |
+| **Smart Ad Discovery** | Browse, filter, and search ads by category, city, and keyword |
+| **Buy & Sell Flow** | Buyers can view ad details, add to cart, and place orders |
+| **Dynamic Checkout** | Tab-based payment gateway (Credit/Debit, Bank Transfer, Mobile Wallet) |
+| **Order Tracking** | Sellers track incoming orders; buyers follow order status history |
+| **Premium Packages** | Upgrade ad visibility with Standard, Premium, or Enterprise plans |
+| **Client Dashboard** | Manage profile, listings, payments, orders, and notifications |
+| **3D Product Viewer** | Interactive `.glb`/`.gltf` model viewer on supported product listings |
+| **JWT Auth** | Secure sign-up and login tightly integrated with Supabase |
 
 ### 🛡️ Moderation & Administration
-- **Moderator Portal**: Dedicated feeds to review, approve, or reject user-submitted ads, keeping platform content quality strictly governed.
-- **Super/Admin Dashboard**: High-level platform analytics, revenue tracking, user role management, and manual payment verifications.
-- **Automated Cron Jobs**: Background tasks that automatically expire old ads, manage subscription states, and perform system cleanups.
+| Feature | Description |
+| :--- | :--- |
+| **Moderator Portal** | Dedicated feed to review, approve, or reject submitted ads |
+| **Admin Dashboard** | Platform analytics, revenue tracking, and payment verification |
+| **User Role Management** | Super Admin can assign and modify user roles |
+| **Fraud Scoring** | AI-based risk assessment on ad submissions (Phase 3) |
+| **Cron Jobs** | Auto-expire old ads, manage subscriptions, and system cleanup |
 
-### AI Assistant (Adflow AI Mode)
-- **Floating AI Button**: Users can open AI Mode from any page and chat without leaving the current screen.
-- **Adflow Guidance**: Helps users with ad posting, package selection, dashboard usage, and account flow.
-- **Production-Safe Integration**: AI chat is routed through Next.js API (`/api/ai/chat`) instead of `localhost` iframe dependency.
-- **Backend Options**: Works with a deployed Python ADK backend (`AI_BACKEND_URL`) or direct Gemini API fallback (`GOOGLE_API_KEY`).
-- **Clean Response Formatting**: Removes markdown stars/bullets and avoids irrelevant time prompts for normal Adflow conversations.
+### 🤖 AI Assistant (Adflow AI Mode)
+| Feature | Description |
+| :--- | :--- |
+| **Floating Widget** | Accessible from any page without leaving context |
+| **Contextual Guidance** | Helps with ad posting, packages, dashboard navigation |
+| **ADK Agent** | Powered by `gemini-2.5-flash` via Google Agent Development Kit |
+| **Dual Backend** | Tries `AI_BACKEND_URL` first; falls back to direct Gemini API |
+| **Clean Responses** | Strips markdown, removes time-helper boilerplate |
+| **Session Persistence** | In-memory session management per user UUID |
 
 #### AI Request Flow
-1. User sends a message from the AI Mode panel.
-2. Frontend calls `POST /api/ai/chat`.
-3. Route tries `AI_BACKEND_URL/chat` first.
-4. If unavailable, route tries Gemini direct with `gemini-2.5-flash`.
-5. Response is normalized and returned to the widget.
+```
+User Message
+    → POST /api/ai/chat  (Next.js API Route)
+        → AI_BACKEND_URL/chat  (Python FastAPI + ADK)
+            ↔ Gemini 2.5 Flash
+        → Fallback: Direct Gemini API (GOOGLE_API_KEY)
+    ← Normalized plain-text reply
+```
+
+### 📈 Phase 2 — Business Growth Features
+- Seller reviews after delivery
+- Ad reports and complaint moderation
+- Listing promotions & ad boosting
+- Analytics events (views, cart adds, purchases, chat opens)
+- SEO marketplace pages
+
+### 🔒 Phase 3 — Pro Marketplace Features
+- Escrow hold & release for order funds
+- Logistics shipment tracking
+- AI pricing guidance per ad submission
+- AI auto-moderation assessments
 
 ---
 
-## � Subscription Packages
-
-Choose the perfect plan for your advertising needs:
+## 📦 Subscription Packages
 
 | Feature | **Basic** 🆓 | **Standard** 💼 | **Premium** ⭐ | **Enterprise** 🏢 |
 | :--- | :---: | :---: | :---: | :---: |
@@ -110,488 +169,445 @@ Choose the perfect plan for your advertising needs:
 | **Support** | Basic | Email | Priority | 24/7 Dedicated |
 | **Analytics** | — | Basic | Advanced | Custom |
 | **Featured Badge** | — | — | ✅ | ✅ |
-| **Bulk Upload** | — | — | ✅ | ✅ |
-| **Team Management** | — | — | — | ✅ |
+| **Bulk Upload** | — | — | ✅ (50 ads) | ✅ |
+| **Team Management** | — | — | — | ✅ (10 members) |
 | **API Access** | — | — | — | ✅ |
 | **Custom Workflows** | — | — | — | ✅ |
-| **Best For** | Getting Started | Active Sellers | Professional Sellers | Large Businesses |
-
-### Package Details
-
-#### 🆓 **Basic - Free**
-- Perfect for trying out AdFlow
-- Publish up to 5 listings
-- 7 days validity per listing
-- Basic customer support
-- Standard listing display
-
-#### 💼 **Standard - PKR 49**
-- For active online sellers
-- Unlimited listings
-- 30 days validity per listing
-- Email support
-- Basic analytics & performance tracking
-- Priority listing placement
-
-#### ⭐ **Premium - PKR 99**
-- For professional sellers & businesses
-- Unlimited listings
-- 90 days validity per listing
-- Priority email & chat support
-- Advanced analytics & insights
-- Featured badge on listings
-- Bulk upload capability (up to 50 ads)
-- Enhanced visibility in search results
-
-#### 🏢 **Enterprise - PKR 299**
-- For businesses & large operations
-- Unlimited everything
-- 365 days validity per listing
-- 24/7 dedicated account manager
-- Custom analytics & reporting
-- API access for integrations
-- Team management (up to 10 members)
-- Custom workflows & automation
-- White-label options available
-- Priority onboarding & training
-
----
-
-## �📸 Screenshots
-
-> *Add your demonstration screenshots to the `/docs/` folder and replace the placeholders below.*
-
-| Search & Explore | Dynamic Checkout | Client Dashboard |
-| :---: | :---: | :---: |
-| ![Explore](docs/explore.png) | ![Checkout](docs/checkout.png) | ![Dashboard](docs/dashboard.png) |
-
-| Admin Analytics | Ad Review (Moderator) | Package Selection |
-| :---: | :---: | :---: |
-| ![Admin](docs/admin.png) | ![Moderator](docs/moderator.png) | ![Packages](docs/packages.png) |
 
 ---
 
 ## 🛠️ Technology Stack
 
-### **Frontend (Client)**
-- **Framework**: [Next.js](https://nextjs.org/) (App Router, React 19)
-- **Styling**: Tailwind CSS & PostCSS
-- **UI Components & Icons**: Lucide React, React Hot Toast
-- **Data Fetching**: Axios & Supabase-js
+### Frontend — `client/`
+| Technology | Version | Role |
+| :--- | :--- | :--- |
+| **Next.js** | 16.2.1 | Framework (App Router) |
+| **React** | 19.2.4 | UI Library |
+| **TypeScript** | ^5 | Static Typing |
+| **Tailwind CSS** | ^4 | Utility-first Styling |
+| **Supabase JS** | ^2.100 | Auth & Realtime |
+| **Axios** | ^1.13 | HTTP Client |
+| **Lucide React** | ^1.7 | Icon System |
+| **React Hot Toast** | ^2.6 | Notifications |
+| **Zod** | ^3.22 | Schema Validation |
 
-### **Backend (Server)**
-- **Runtime & Framework**: Node.js with Express.js
-- **Databases**: 
-  - [Supabase](https://supabase.com/) (PostgreSQL) - Primary relational database
-  - [MongoDB](https://www.mongodb.com/) with [Mongoose](https://mongoosejs.com/) - Optional document store for flexible schema data
-- **Security & Validation**: JWT, bcryptjs, Helmet, CORS, and Zod (Schema Validation)
-- **Utilities**: morgan (API Logging), slugify, node-cron (Task Scheduling)
+### Backend — `server/`
+| Technology | Version | Role |
+| :--- | :--- | :--- |
+| **Node.js + Express** | ^4.18 | REST API Server |
+| **Supabase JS** | ^2.39 | PostgreSQL ORM |
+| **JWT** | ^9 | Auth Tokens |
+| **bcryptjs** | ^2.4 | Password Hashing |
+| **Helmet** | ^7 | HTTP Security Headers |
+| **Morgan** | ^1.10 | Request Logging |
+| **node-cron** | ^3 | Task Scheduling |
+| **Zod** | ^3.22 | Request Validation |
+| **Slugify** | ^1.6 | SEO URL Slugs |
+| **Nodemon** | ^3.1 | Dev Hot-reload |
 
----
+### AI Backend — `backend_api.py`
+| Technology | Version | Role |
+| :--- | :--- | :--- |
+| **Python** | 3.10+ | Runtime |
+| **FastAPI** | ^0.115 | API Framework |
+| **Uvicorn** | ^0.30 | ASGI Server |
+| **Google ADK** | ^1.0 | Agent Framework |
+| **Gemini 2.5 Flash** | — | LLM |
+| **python-dotenv** | ^1.0 | Env Management |
 
-## ⚙️ Configuration & Environment
-
-The application requires specific environment variables to bridge the frontend and backend with Supabase.
-
-### Root `.env` (Server)
-| Variable | Description |
+### Infrastructure
+| Service | Purpose |
 | :--- | :--- |
-| `SUPABASE_URL` | Your Supabase project URL |
-| `SUPABASE_ANON_KEY` | Public API key for Supabase |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Secret** Service Role key for administrative DB access |
-| `MONGODB_ENABLE` | Toggle MongoDB connection (`true` / `false`) - defaults to `true` |
-| `MONGODB_URI` | MongoDB connection string (e.g., `mongodb://localhost:27017/adflow`) |
-| `MONGODB_DB_NAME` | MongoDB database name (e.g., `adflow`) |
-| `JWT_SECRET` | Secret key for signing JSON Web Tokens |
-| `JWT_EXPIRES_IN` | JWT expiration time (e.g., `7d`) |
-| `PORT` | Local port for Express server (default: `4000`) |
-| `NODE_ENV` | Environment mode (`development` or `production`) |
-| `NEXT_PUBLIC_API_URL` | The URL where the server is hosted (for client requests) |
-| `AI_BACKEND_URL` | Public URL of deployed Python AI backend (e.g., Railway/Render URL) |
-| `GOOGLE_API_KEY` | Gemini API key for AI fallback (server-side) |
-| `GEMINI_API_KEY` | Optional alias for Gemini API key |
-
-### Client `.env.local`
-| Variable | Description |
-| :--- | :--- |
-| `NEXT_PUBLIC_API_URL` | Points to your backend (e.g., `http://localhost:4000`) |
-| `NEXT_PUBLIC_SUPABASE_URL` | Same as Server URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same as Server Anon Key |
-| `NEXT_PUBLIC_CHATBOT_URL` | Optional chatbot URL reference (avoid localhost in production) |
-
----
-
-## Marketplace Orders Setup
-
-To enable full buy/sell checkout flow in production, run:
-
-- `db/orders_migration.sql`
-
-This creates:
-- `orders`
-- `order_items`
-- `order_status_history`
-
-After migration, buyers can place orders from `/checkout` and sellers can review incoming product orders in the client dashboard Orders tab.
-
----
-
-## Phase 2 Business Features Setup
-
-To enable reviews, analytics events, complaint moderation, promotions, and SEO growth pages, run:
-
-- `db/phase2_business_growth.sql`
-
-This creates:
-- `seller_reviews`
-- `ad_reports`
-- `ad_promotions`
-- `ad_analytics_events`
-
-After migration, sellers can boost listings, buyers can submit reviews after delivery, moderators can process reports, and analytics will track views, chats, cart adds, and purchases.
-
----
-
-## Phase 3 Pro Marketplace Setup
-
-To enable escrow, logistics, fraud scoring, pricing suggestions, and AI moderation, run:
-
-- `db/phase3_pro_marketplace.sql`
-
-This creates:
-- `escrow_transactions`
-- `logistics_shipments`
-- `ad_ai_assessments`
-
-After migration, order funds are held in escrow, logistics records can be created and tracked, admin gets a fraud dashboard, and ad submissions store AI pricing and moderation assessments.
-
----
-
-## 🗄️ Architecture & Core Models
-
-### Core Database Entities
-- **Users**: User profiles mapping tightly to RBAC (`client`, `moderator`, `admin`, `super_admin`).
-- **Ads**: The fundamental marketplace entities containing descriptions, pricing, approval states, and boost/featured flags.
-- **Categories & Cities**: Independent lookup models for hierarchical categorization.
-- **Packages & Payments**: Structures to handle premium capabilities and track verifiable payment proofs.
-
-### 🔐 Role-Based Access Control (RBAC)
-Implemented via strict Express middleware:
-- **`client`**: Standard privileges (browse, post ads, pay).
-- **`moderator`**: Content management privileges (approve/reject).
-- **`admin` / `super_admin`**: Platform overrides, analytics, and role modifications.
-
----
-
-## 📊 MongoDB Collections & Schema
-
-Adflow Pro includes **13 comprehensive MongoDB collections** designed to complement Supabase with document-style flexibility:
-
-### Pre-seeded Collections ✅
-| Collection | Count | Purpose |
-| :--- | :---: | :--- |
-| **packages** | 4 | Subscription tiers (Basic, Standard, Premium, Enterprise) |
-| **categories** | 8 | Listing categories (Electronics, Vehicles, Real Estate, Fashion, Furniture, Books, Services, Sports) |
-| **cities** | 8 | Cities (Karachi, Lahore, Islamabad, Rawalpindi, Multan, Peshawar, Faisalabad, Quetta) |
-| **learning_questions** | 10 | FAQ content for user help widget |
-
-### Ready for Data
-| Collection | Purpose |
-| :--- | :--- |
-| **users** | User accounts & authentication (mirrors Supabase for flexibility) |
-| **seller_profiles** | Public seller metadata, ratings, verification status |
-| **ads** | Main marketplace listings with status, dates, featured flags |
-| **ad_media** | Images & videos attached to ads with validation status |
-| **payments** | Payment proofs & verification workflow |
-| **notifications** | User in-app alerts & messages |
-| **audit_logs** | System activity tracking for compliance |
-| **ad_status_history** | Ad workflow transitions & moderation history |
-| **system_health_logs** | Database & service performance monitoring |
-
-### Database Initialization
-The server automatically:
-- ✅ Creates all indexes for performance
-- ✅ Seeds initial data (4 packages, 8 categories, 8 cities, 10 FAQ items)
-- ✅ Tracks collection statistics
-- ✅ Reports connection health
-
-### Admin Endpoints for MongoDB
-- `GET /api/internal/db/stats` - View collection document counts
-- `GET /api/internal/db/info` - MongoDB server info (version, uptime, memory)
-- `GET /api/health` - Full system health including Mongo status
-
-**See [MONGODB_SCHEMA.md](./MONGODB_SCHEMA.md) & [MONGODB_QUICK_REFERENCE.md](./MONGODB_QUICK_REFERENCE.md) for detailed documentation.**
+| **Vercel** | Frontend & API hosting |
+| **Supabase** | PostgreSQL + Auth |
+| **Railway / Render** | Python AI backend |
+| **GitHub** | Version control |
 
 ---
 
 ## 📂 Project Structure
 
 ```text
-📦 Adflow Pro
-├── 📁 client/                # Next.js Application
-│   ├── 📁 src/app/           # App Router Layouts & Pages
-│   │   ├── 📁 ads/           # Detail views
-│   │   ├── 📁 auth/          # Authentication screens
-│   │   ├── 📁 dashboard/     # Client, Admin, and Moderator dashboards
-│   │   └── 📁 explore/       # Search and filtering
-│   └── .env.local.example    # Frontend env template
+📦 Adflow Pro (Monorepo)
 │
-├── 📁 server/                # Express.js Application
+├── 📁 client/                        # Next.js 16 Application (TypeScript)
 │   ├── 📁 src/
-│   │   ├── 📁 config/        # Supabase & MongoDB configuration
-│   │   ├── 📁 models/        # 13 Mongoose models for MongoDB ✨ NEW
-│   │   ├── 📁 seeds/         # Database seeding scripts ✨ NEW
-│   │   ├── 📁 cron/          # Scheduled Node tasks
-│   │   ├── 📁 middleware/    # Auth & RBAC logic
-│   │   ├── 📁 routes/        # API Routers
-│   │   ├── 📁 services/      # Abstraction for business logic
-│   │   └── 📁 validators/    # Zod payload schemas
-│   └── package.json          
+│   │   ├── 📁 app/                   # App Router pages
+│   │   │   ├── 📁 ads/[slug]/        # Dynamic ad detail page
+│   │   │   ├── 📁 auth/              # Login & registration
+│   │   │   ├── 📁 categories/        # Category browsing
+│   │   │   ├── 📁 checkout/          # Order checkout flow
+│   │   │   ├── 📁 cities/            # City-filtered listings
+│   │   │   ├── 📁 contact/           # Contact page
+│   │   │   ├── 📁 dashboard/
+│   │   │   │   ├── 📁 admin/         # Admin portal
+│   │   │   │   ├── 📁 client/        # Seller/buyer dashboard
+│   │   │   │   │   ├── 📁 notifications/
+│   │   │   │   │   └── 📁 pay/       # Payment upload
+│   │   │   │   └── 📁 moderator/     # Moderator review feed
+│   │   │   ├── 📁 explore/           # Search & filtering
+│   │   │   ├── 📁 faq/               # Help centre
+│   │   │   ├── 📁 marketplace/       # Marketplace hub
+│   │   │   ├── 📁 packages/          # Subscription plans
+│   │   │   ├── 📁 privacy/           # Privacy policy
+│   │   │   ├── 📁 terms/             # Terms of service
+│   │   │   └── 📁 api/               # Next.js API routes (AI proxy)
+│   │   ├── 📁 components/            # Shared UI components
+│   │   │   ├── AdCard.tsx
+│   │   │   ├── AiModeWidget.tsx
+│   │   │   ├── Footer.tsx
+│   │   │   ├── Navbar.tsx
+│   │   │   ├── Providers.tsx
+│   │   │   └── StatusBadge.tsx
+│   │   ├── 📁 lib/                   # Utilities & Supabase client
+│   │   └── 📁 types/                 # TypeScript type definitions
+│   ├── next.config.ts
+│   └── .env.local.example
 │
-├── 📁 db/                    # SQL Database Schemas and Migrations
-├── 📄 MONGODB_SCHEMA.md      # Detailed MongoDB schema reference ✨ NEW
-├── 📄 MONGODB_QUICK_REFERENCE.md # Quick start guide ✨ NEW
-├── 📄 IMPLEMENTATION_SUMMARY.md  # Complete implementation details ✨ NEW
-└── package.json              # Monorepo Scripts
+├── 📁 server/                        # Express.js REST API
+│   ├── 📁 src/
+│   │   ├── 📁 config/                # Supabase & env config
+│   │   ├── 📁 cron/                  # Scheduled background tasks
+│   │   ├── 📁 middleware/            # Auth & RBAC middleware
+│   │   ├── 📁 routes/                # Route handlers
+│   │   │   ├── admin.routes.js
+│   │   │   ├── auth.routes.js
+│   │   │   ├── client.routes.js
+│   │   │   ├── moderator.routes.js
+│   │   │   ├── public.routes.js
+│   │   │   ├── internal.routes.js
+│   │   │   ├── cron.routes.js
+│   │   │   └── questions.routes.js
+│   │   ├── 📁 services/              # Business logic layer
+│   │   └── 📁 validators/            # Zod request schemas
+│   └── package.json
+│
+├── 📁 db/                            # SQL Schemas & Migrations
+│   ├── schema.sql                    # Core tables
+│   ├── seed.sql                      # Initial seed data
+│   ├── orders_migration.sql          # Phase 1: Marketplace orders
+│   ├── phase1_marketplace_migration.sql
+│   ├── phase2_business_growth.sql    # Phase 2: Reviews, analytics
+│   ├── phase3_pro_marketplace.sql    # Phase 3: Escrow, AI scoring
+│   └── buyer_seller_accounts.sql
+│
+├── 📁 my_agent/                      # Google ADK AI Agent
+│   └── agent.py                      # Gemini 2.5 Flash agent definition
+│
+├── 📁 web/                           # Static web UI for AI backend
+│   ├── index.html
+│   ├── app.js
+│   └── styles.css
+│
+├── 📁 docs/                          # Documentation assets
+├── backend_api.py                    # FastAPI AI microservice (Python)
+├── requirements.txt                  # Python dependencies
+├── vercel.json                       # Vercel deployment config
+├── package.json                      # Monorepo root scripts
+└── Adflow.apk                        # Android APK build
 ```
+
+---
+
+## 🏗️ Architecture & Role-Based Access Control
+
+### RBAC — Four Permission Tiers
+
+| Role | Capabilities |
+| :--- | :--- |
+| **`client`** | Browse, post ads, upload payment proof, manage profile, place orders |
+| **`moderator`** | Approve / reject ads, view moderation feed |
+| **`admin`** | Verify payments, manage users, view platform analytics |
+| **`super_admin`** | All admin capabilities + role assignment + system overrides |
+
+All role checks are enforced via **Express middleware** on every protected route. The frontend conditionally renders dashboards based on the JWT-decoded role.
+
+### Database Architecture
+
+```
+Supabase (PostgreSQL) — Primary
+    ├── users / profiles
+    ├── ads + ad_media
+    ├── categories / cities
+    ├── packages / payments
+    ├── orders / order_items / order_status_history
+    ├── seller_reviews / ad_reports / ad_promotions
+    ├── ad_analytics_events
+    ├── escrow_transactions
+    └── logistics_shipments / ad_ai_assessments
+```
+
+---
+
+## 🗄️ Database Setup
+
+Run SQL migrations in the following order from your Supabase SQL Editor:
+
+### Step 1 — Core Schema
+```bash
+db/schema.sql          # Users, ads, categories, cities, packages, payments
+db/seed.sql            # Initial lookup data
+```
+
+### Step 2 — Marketplace Orders *(Phase 1)*
+```bash
+db/orders_migration.sql
+# Creates: orders, order_items, order_status_history
+```
+
+### Step 3 — Business Growth *(Phase 2)*
+```bash
+db/phase2_business_growth.sql
+# Creates: seller_reviews, ad_reports, ad_promotions, ad_analytics_events
+```
+
+### Step 4 — Pro Marketplace *(Phase 3)*
+```bash
+db/phase3_pro_marketplace.sql
+# Creates: escrow_transactions, logistics_shipments, ad_ai_assessments
+```
+
+---
+
+## ⚙️ Environment Variables
+
+### Root / Server `.env`
+
+| Variable | Required | Description |
+| :--- | :---: | :--- |
+| `SUPABASE_URL` | ✅ | Supabase project URL |
+| `SUPABASE_ANON_KEY` | ✅ | Supabase public API key |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Supabase service role key (secret) |
+| `JWT_SECRET` | ✅ | Secret for signing JWTs |
+| `JWT_EXPIRES_IN` | ✅ | Token expiry (e.g. `7d`) |
+| `PORT` | — | Express port (default: `4000`) |
+| `NODE_ENV` | — | `development` or `production` |
+| `AI_BACKEND_URL` | — | URL of deployed Python AI service |
+| `GOOGLE_API_KEY` | — | Gemini API key (AI fallback) |
+| `GEMINI_API_KEY` | — | Alias for `GOOGLE_API_KEY` |
+| `NEXT_PUBLIC_API_URL` | ✅ | Backend URL for client requests |
+
+### Client `.env.local`
+
+| Variable | Required | Description |
+| :--- | :---: | :--- |
+| `NEXT_PUBLIC_API_URL` | ✅ | Backend URL (e.g. `http://localhost:4000`) |
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Same as `SUPABASE_URL` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Same as `SUPABASE_ANON_KEY` |
+| `NEXT_PUBLIC_CHATBOT_URL` | — | Optional external chatbot URL |
+
+### Python AI Backend `my_agent/.env`
+
+| Variable | Required | Description |
+| :--- | :---: | :--- |
+| `GOOGLE_API_KEY` | ✅ | Gemini API key for ADK agent |
+
+> Copy `.env.example` and `client/.env.local.example` to get started quickly.
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18+ recommended)
-- A configured [Supabase](https://supabase.com/) Project.
+- **Node.js** v18+
+- **Python** 3.10+ *(for AI backend)*
+- A **Supabase** project
 
-### 1. Installation
-Clone the repository and install dependencies simultaneously using the monorepo root script:
+### 1. Clone & Install
 
 ```bash
-git clone https://github.com/your-username/adflow-pro.git
-cd adflow-pro
+git clone https://github.com/fa23-bcs-010-eng/Adflow.git
+cd Adflow
 npm run install:all
 ```
 
-### 2. Database Configuration
-
-#### Supabase Setup (Primary Database)
-- Create a [Supabase](https://supabase.com/) account and project
-- Add your credentials to `.env`:
-  ```env
-  SUPABASE_URL=your_project_url
-  SUPABASE_ANON_KEY=your_anon_key
-  SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-  ```
-
-#### MongoDB Setup (Optional but Recommended)
-- Ensure [MongoDB](https://www.mongodb.com/try/download/community) is installed and running
-- Configure in `.env`:
-  ```env
-  MONGODB_ENABLE=true
-  MONGODB_URI=mongodb://localhost:27017/adflow
-  MONGODB_DB_NAME=adflow
-  ```
-- Seed initial data: `npm run seed` (from `server/` directory)
-
-### 3. Run Development Servers
-Use the concurrent start script from the root directory:
+### 2. Configure Environment
 
 ```bash
+# Server environment
+cp .env.example .env
+# Fill in SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, JWT_SECRET
+
+# Client environment
+cp client/.env.local.example client/.env.local
+# Fill in NEXT_PUBLIC_API_URL, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
+```
+
+### 3. Run Database Migrations
+
+Execute `db/schema.sql` and `db/seed.sql` in your **Supabase SQL Editor**, then optionally run Phase 1–3 migrations.
+
+### 4. Start Development Servers
+
+```bash
+# Starts both client (port 3000) and server (port 4000) concurrently
 npm run dev
 ```
 
-- **Client App**: `http://localhost:3000`
-- **Backend API**: `http://localhost:4000`
+| Service | URL |
+| :--- | :--- |
+| **Frontend** | `http://localhost:3000` |
+| **Backend API** | `http://localhost:4000` |
 
-### 4. Verify MongoDB Status
+### 5. (Optional) Run AI Backend
+
+```bash
+pip install -r requirements.txt
+uvicorn backend_api:app --reload --port 8000
+```
+
+### 6. Verify Health
+
 ```bash
 curl http://localhost:4000/api/health
 ```
 
-Response should show:
 ```json
-{
-  "status": "ok",
-  "mongo": {
-    "enabled": true,
-    "connected": true,
-    "readyState": 1
-  }
-}
+{ "status": "ok" }
 ```
 
 ---
 
-## 🚀 Deployment (Vercel + Supabase + MongoDB)
+## 🌍 Deployment
 
-Adflow Pro is optimized for deployment as a single Vercel project with Supabase and MongoDB Atlas.
+### Vercel (Frontend + API)
 
-### 1. Project Configuration
-- **Framework Preset**: Next.js (detected automatically)
-- **Root Directory**: `./` (keep at root)
-- **Build Command**: `npm run build`
-- **Output Directory**: `.next`
-- **Install Command**: `npm run install:all`
+| Setting | Value |
+| :--- | :--- |
+| **Framework** | Next.js (auto-detected) |
+| **Build Command** | `npm run build` |
+| **Install Command** | `npm run install:all` |
+| **Output Directory** | `.next` |
 
-### 2. Environment Variables
-Add the following variables in the Vercel Dashboard:
+**Required environment variables in Vercel Dashboard:**
 
-**Supabase (Required)**
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
+```env
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+JWT_SECRET=
+JWT_EXPIRES_IN=7d
+NEXT_PUBLIC_API_URL=https://your-deployment.vercel.app
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+AI_BACKEND_URL=https://your-ai-backend.up.railway.app
+GOOGLE_API_KEY=
+```
 
-**JWT & Security**
-- `JWT_SECRET` (Use a strong random secret)
-- `JWT_EXPIRES_IN` (e.g., `7d`)
-- `CRON_SECRET` (For securing cron jobs)
+### Railway / Render (Python AI Backend)
 
-**MongoDB (Optional but Recommended)**
-- `MONGODB_ENABLE=true`
-- `MONGODB_URI` (Use [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) hosted string)
-- `MONGODB_DB_NAME=adflow`
+Deploy the following files:
+```
+backend_api.py
+requirements.txt
+my_agent/
+web/
+```
 
-**Frontend (Public)**
-- `NEXT_PUBLIC_API_URL` (Your Vercel deployment URL)
-- `NEXT_PUBLIC_SUPABASE_URL` (Match `SUPABASE_URL`)
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Match `SUPABASE_ANON_KEY`)
-
-**AI (Recommended)**
-- `AI_BACKEND_URL` (Public Railway/Render URL of `backend_api.py`, e.g. `https://your-ai.up.railway.app`)
-- `GOOGLE_API_KEY` (Gemini key used as fallback if backend is unavailable)
-- `GEMINI_API_KEY` (Optional alternative to `GOOGLE_API_KEY`)
-
-### 3. AI Backend Deployment (Railway)
-Deploy these files from repo root:
-- `backend_api.py`
-- `requirements.txt`
-- `my_agent/`
-- `web/`
-
-Do not deploy:
-- `.venv/`
-- `__pycache__/`
-
-Railway start command:
+**Start command:**
 ```bash
 uvicorn backend_api:app --host 0.0.0.0 --port $PORT
 ```
 
-Minimum Railway env variable:
+**Required environment variable:**
 ```env
-GOOGLE_API_KEY=your_key_here
+GOOGLE_API_KEY=your_gemini_key
 ```
 
-### 4. Post-Deployment
-After the first deployment:
-1. Run seed script to populate MongoDB: `npm run seed`
-2. Verify health endpoint: `https://your-deployment.vercel.app/api/health`
-3. Check database stats: `https://your-deployment.vercel.app/api/internal/db/stats`
-4. Verify AI backend health: `https://your-ai.up.railway.app/health`
-5. Verify live app AI on Vercel: [https://adflowpro-kappa.vercel.app/](https://adflowpro-kappa.vercel.app/)
+### Post-Deployment Checklist
+- [ ] Verify API health: `https://your-app.vercel.app/api/health`
+- [ ] Verify AI backend: `https://your-ai.railway.app/health`
+- [ ] Run Phase 1–3 SQL migrations in Supabase
+- [ ] Test login with demo credentials
 
 ---
 
-## � MongoDB Models & Usage
+## 📡 API Reference
 
-### Available Models
-Import and use MongoDB models from `server/src/models/`:
+### Auth Routes — `/api/auth`
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Create new account |
+| `POST` | `/api/auth/login` | Login and receive JWT |
 
-```javascript
-const {
-  User,
-  SellerProfile,
-  Package,
-  Category,
-  City,
-  Ad,
-  AdMedia,
-  Payment,
-  Notification,
-  AuditLog,
-  AdStatusHistory,
-  LearningQuestion,
-  SystemHealthLog
-} = require('../models');
-```
+### Public Routes — `/api/public`
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/public/ads` | List all active ads |
+| `GET` | `/api/public/ads/:slug` | Single ad detail |
+| `GET` | `/api/public/categories` | All categories |
+| `GET` | `/api/public/cities` | All cities |
+| `GET` | `/api/public/packages` | Subscription packages |
 
-### Usage Examples
+### Client Routes — `/api/client` *(JWT required)*
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET/POST` | `/api/client/ads` | Manage own ads |
+| `POST` | `/api/client/payments` | Upload payment proof |
+| `GET` | `/api/client/orders` | View orders |
+| `GET` | `/api/client/notifications` | Notifications |
 
-**Create a User**
-```javascript
-const user = await User.create({
-  name: 'Ahmed Ali',
-  email: 'ahmed@example.com',
-  password_hash: await bcrypt.hash('password', 10),
-  role: 'client'
-});
-```
+### Moderator Routes — `/api/moderator` *(Moderator role)*
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/moderator/ads` | Pending review queue |
+| `PATCH` | `/api/moderator/ads/:id` | Approve or reject ad |
 
-**Create an Ad**
-```javascript
-const ad = await Ad.create({
-  user_id: userId,
-  title: 'iPhone 15 Pro',
-  description: 'New in box',
-  category_id: categoryId,
-  city_id: cityId,
-  status: 'pending',
-  price: 150000
-});
-```
+### Admin Routes — `/api/admin` *(Admin role)*
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/admin/payments` | All pending payments |
+| `PATCH` | `/api/admin/payments/:id` | Verify or reject payment |
+| `GET` | `/api/admin/users` | User management |
+| `GET` | `/api/admin/analytics` | Platform metrics |
 
-**Log Status Change**
-```javascript
-await Ad.findByIdAndUpdate(adId, { status: 'active' });
-await AdStatusHistory.create({
-  ad_id: adId,
-  previous_status: 'pending',
-  new_status: 'active',
-  changed_by: moderatorId,
-  reason: 'moderation'
-});
-```
-
-**Send Notification**
-```javascript
-await Notification.create({
-  user_id: userId,
-  title: 'Ad Approved',
-  message: 'Your listing has been published!',
-  type: 'success'
-});
-```
-
-### Database Admin Commands
-
-**Seed Data** (creates 4 packages, 8 categories, 8 cities, 10 FAQs)
-```bash
-npm run seed
-```
-
-**Request Collection Statistics**
-```bash
-curl http://localhost:4000/api/internal/db/stats
-```
-
-**Check MongoDB Connection Health**
-```bash
-curl http://localhost:4000/api/internal/db/info
-```
-
-**Full Documentation**: See [MONGODB_QUICK_REFERENCE.md](./MONGODB_QUICK_REFERENCE.md)
+### System Routes
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/health` | Full system health check |
+| `GET` | `/api/internal/db/stats` | DB collection statistics |
+| `POST` | `/api/ai/chat` | AI assistant chat (proxied) |
 
 ---
 
-## 📚 Documentation
+## 📸 Screenshots
 
-- **[MONGODB_SCHEMA.md](./MONGODB_SCHEMA.md)** - Complete schema reference for all 13 collections
-- **[MONGODB_QUICK_REFERENCE.md](./MONGODB_QUICK_REFERENCE.md)** - Quick start guide with examples
-- **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Detailed implementation status
+| Home / Explore | Client Dashboard | Package Selection |
+| :---: | :---: | :---: |
+| ![Explore](docs/explore.png) | ![Dashboard](docs/dashboard.png) | ![Packages](docs/packages.png) |
+
+| Dynamic Checkout | Admin Analytics | Moderator Feed |
+| :---: | :---: | :---: |
+| ![Checkout](docs/checkout.png) | ![Admin](docs/admin.png) | ![Moderator](docs/moderator.png) |
 
 ---
 
-**Hammad Raheel Sarwar**  
-*Full Stack Developer & Software Engineering Student (Semester 6)*
+## 🤝 Contributing
 
-Designed with scalability, rich aesthetics, and robust MVC software patterns in mind.
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit changes: `git commit -m "feat: add your feature"`
+4. Push to branch: `git push origin feature/your-feature`
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+## 👤 Author
+
+<div align="center">
+
+**Hammad Raheel Sarwar**
+
+*Full-Stack Developer & Software Engineering Student (Semester 6)*
+
+[![GitHub](https://img.shields.io/badge/GitHub-fa23--bcs--010--eng-181717?style=flat-square&logo=github)](https://github.com/fa23-bcs-010-eng)
+
+*Built with scalability, rich aesthetics, and robust MVC software patterns in mind.*
+
+</div>
