@@ -561,7 +561,7 @@ export default function ClientDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="kpi-card">
                     <p className="text-xs text-slate-300/60 mb-1">Revenue</p>
-                    <p className="text-3xl font-black text-emerald-300">PKR {Number(sellerAnalytics.summary?.total_revenue || 0).toLocaleString()}</p>
+                    <p className="text-3xl font-black text-emerald-300">${Number(sellerAnalytics.summary?.total_revenue || 0).toLocaleString()}</p>
                   </div>
                   <div className="kpi-card">
                     <p className="text-xs text-slate-300/60 mb-1">Average Rating</p>
@@ -594,7 +594,7 @@ export default function ClientDashboard() {
                           <span>Chats: {listing.analytics?.chats || 0}</span>
                           <span>Cart Adds: {listing.analytics?.cart_adds || 0}</span>
                           <span>Purchases: {listing.analytics?.purchases || 0}</span>
-                          <span>Revenue: PKR {Number(listing.analytics?.revenue || 0).toLocaleString()}</span>
+                          <span>Revenue: ${Number(listing.analytics?.revenue || 0).toLocaleString()}</span>
                         </div>
                       </div>
                     ))}
@@ -729,12 +729,12 @@ export default function ClientDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                       <div>
                         <p className="text-xs text-slate-400 mb-1">Suggested Price</p>
-                        <p className="text-lg font-bold text-cyan-300">PKR {Number(listingInsight.suggested_price || 0).toLocaleString()}</p>
+                        <p className="text-lg font-bold text-cyan-300">${Number(listingInsight.suggested_price || 0).toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-xs text-slate-400 mb-1">Range</p>
                         <p className="text-sm text-slate-200">
-                          PKR {Number(listingInsight.suggested_price_min || 0).toLocaleString()} - {Number(listingInsight.suggested_price_max || 0).toLocaleString()}
+                          ${Number(listingInsight.suggested_price_min || 0).toLocaleString()} - ${Number(listingInsight.suggested_price_max || 0).toLocaleString()}
                         </p>
                       </div>
                       <div>
@@ -877,7 +877,7 @@ export default function ClientDashboard() {
                               <span className="text-xs text-cyan-300 capitalize">{order.status}</span>
                             </div>
                             <p className="text-xs text-slate-400">
-                              Total: PKR {Number(order.total_amount || 0).toLocaleString()} | Items: {(order.items || []).length}
+                              Total: ${Number(order.total_amount || 0).toLocaleString()} | Items: {(order.items || []).length}
                             </p>
                             <p className="text-xs text-slate-500 mt-1">{new Date(order.created_at).toLocaleString()}</p>
                             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -958,7 +958,7 @@ export default function ClientDashboard() {
                               <span className="text-xs text-cyan-300">x{item.quantity}</span>
                             </div>
                             <p className="text-xs text-slate-400">
-                              Buyer: {item.buyer?.full_name || item.buyer?.email || 'Unknown'} | PKR {Number(item.total_price || 0).toLocaleString()}
+                              Buyer: {item.buyer?.full_name || item.buyer?.email || 'Unknown'} | ${Number(item.total_price || 0).toLocaleString()}
                             </p>
                             <p className="text-xs text-cyan-300 mt-1 capitalize">Status: {item.orders?.status || 'placed'}</p>
                             <p className="text-xs text-slate-500 mt-1">{new Date(item.created_at).toLocaleString()}</p>
@@ -1034,8 +1034,8 @@ export default function ClientDashboard() {
                           <div key={offer.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
                             <p className="text-sm font-semibold text-white">{offer.ad?.title || 'Listing'}</p>
                             <p className="text-xs text-slate-400 mt-1">
-                              Offered: PKR {Number(offer.offered_price || 0).toLocaleString()}
-                              {offer.counter_price ? ` | Counter: PKR ${Number(offer.counter_price).toLocaleString()}` : ''}
+                              Offered: ${Number(offer.offered_price || 0).toLocaleString()}
+                              {offer.counter_price ? ` | Counter: $${Number(offer.counter_price).toLocaleString()}` : ''}
                             </p>
                             <p className="text-xs text-cyan-300 mt-1 capitalize">Status: {offer.status}</p>
                             <p className="text-xs text-slate-500 mt-1">{new Date(offer.created_at).toLocaleString()}</p>
@@ -1063,7 +1063,7 @@ export default function ClientDashboard() {
                           <div key={offer.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
                             <p className="text-sm font-semibold text-white">{offer.ad?.title || 'Listing'}</p>
                             <p className="text-xs text-slate-400 mt-1">
-                              Buyer offered PKR {Number(offer.offered_price || 0).toLocaleString()}
+                              Buyer offered ${Number(offer.offered_price || 0).toLocaleString()}
                             </p>
                             <p className="text-xs text-cyan-300 mt-1 capitalize">Status: {offer.status}</p>
                             {String(offer.status) === 'pending' && (

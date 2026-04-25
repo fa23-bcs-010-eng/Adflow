@@ -90,7 +90,7 @@ export default function CheckoutPage() {
                     <Link href={`/ads/${item.slug}`} className="text-white font-semibold hover:text-cyan-300 line-clamp-2">
                       {item.title}
                     </Link>
-                    <p className="text-cyan-300 font-bold mt-1">PKR {item.price.toLocaleString()}</p>
+                    <p className="text-cyan-300 font-bold mt-1">${item.price.toLocaleString()}</p>
                     <p className="text-xs text-slate-400">Qty: {item.qty}</p>
                   </div>
                   <button
@@ -116,17 +116,17 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span>PKR {totalPrice.toLocaleString()}</span>
+              <span>${totalPrice.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span>Platform Fee</span>
-              <span>PKR 0</span>
+              <span>$0</span>
             </div>
           </div>
           <div className="my-4 h-px bg-white/10" />
           <div className="flex justify-between text-xl font-black text-cyan-300 mb-4">
             <span>Total</span>
-            <span>PKR {totalPrice.toLocaleString()}</span>
+            <span>${totalPrice.toLocaleString()}</span>
           </div>
 
           <button

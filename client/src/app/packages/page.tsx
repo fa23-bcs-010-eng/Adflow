@@ -175,7 +175,7 @@ export default function PackagesPage() {
 
                   <div className="mb-4 space-y-2">
                     <p className="text-white text-4xl md:text-5xl font-black leading-none">
-                      {pkg.price === 0 ? 'Free' : `PKR ${pkg.price}`}
+                      {pkg.price === 0 ? 'Free' : `$${pkg.price}`}
                     </p>
                     <p className="text-slate-400 text-sm font-medium">{details.duration}</p>
                   </div>

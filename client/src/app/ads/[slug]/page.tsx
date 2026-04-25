@@ -357,7 +357,7 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
             <h1 className="text-2xl font-bold text-white mt-1">{ad.title}</h1>
             {ad.price !== undefined && (
               <p className="text-2xl font-black text-cyan-300 mt-1">
-                PKR {ad.price.toLocaleString()}
+                ${ad.price.toLocaleString()}
               </p>
             )}
 
@@ -536,7 +536,7 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
                   <input
                     className="input"
                     type="number"
-                    placeholder="Offer amount (PKR)"
+                    placeholder="Offer amount ($)"
                     value={offerPrice}
                     onChange={(e) => setOfferPrice(e.target.value)}
                   />
@@ -552,7 +552,7 @@ export default function AdDetailPage({ params }: { params: Promise<{ slug: strin
                   {myOffer && (
                     <p className="text-xs text-cyan-300 capitalize">
                       Latest offer status: {myOffer.status}
-                      {myOffer.counter_price ? ` | Counter: PKR ${Number(myOffer.counter_price).toLocaleString()}` : ''}
+                      {myOffer.counter_price ? ` | Counter: $${Number(myOffer.counter_price).toLocaleString()}` : ''}
                     </p>
                   )}
                 </div>

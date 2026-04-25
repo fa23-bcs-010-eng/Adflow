@@ -72,7 +72,7 @@ export default function AdCard({ ad, showStatus = false }: { ad: Ad; showStatus?
 
         {ad.price !== undefined && (
           <p className="text-cyan-300 font-bold text-base mb-2">
-            PKR {ad.price.toLocaleString()}
+            ${ad.price.toLocaleString()}
           </p>
         )}
 

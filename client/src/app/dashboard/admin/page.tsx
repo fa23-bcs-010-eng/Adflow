@@ -305,7 +305,7 @@ export default function AdminDashboard() {
                     {(fraud.escrow || []).slice(0, 5).map((item: any) => (
                       <div key={item.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
                         <p className="text-sm text-white font-semibold">Order #{String(item.order_id).slice(0, 8)}</p>
-                        <p className="text-xs text-slate-400 mt-1">PKR {Number(item.amount || 0).toLocaleString()} | {item.status}</p>
+                        <p className="text-xs text-slate-400 mt-1">${Number(item.amount || 0).toLocaleString()} | {item.status}</p>
                         <p className="text-xs text-slate-500 mt-1">Risk score: {item.risk_score || 0}</p>
                       </div>
                     ))}
