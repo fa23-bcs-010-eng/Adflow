@@ -42,9 +42,8 @@ export async function POST(request: NextRequest) {
         email: body.email,
         password_hash,
         role: body.role,
-        account_type: body.role === 'client' ? body.account_type : null,
       })
-      .select('id, email, full_name, role, account_type')
+      .select('id, email, full_name, role')
       .single();
 
     if (error || !user) {
@@ -55,10 +54,15 @@ export async function POST(request: NextRequest) {
       await supabaseAdmin.from('seller_profiles').insert({ user_id: user.id });
     }
 
+    const finalUser = {
+      ...user,
+      account_type: body.role === 'client' ? body.account_type : null,
+    };
+
     return NextResponse.json(
       {
-        user,
-        token: issueToken(user),
+        user: finalUser,
+        token: issueToken(finalUser),
       },
       { status: 201 }
     );

@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('id, email, full_name, role, account_type, password_hash, is_active')
+      .select('id, email, full_name, role, password_hash, is_active')
       .eq('email', body.email)
       .maybeSingle();
 
@@ -35,12 +35,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
+    let accountType: 'buyer' | 'seller' | null = null;
+    if (user.role === 'client') {
+      const { data: sellerProfile } = await supabaseAdmin
+        .from('seller_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      accountType = sellerProfile ? 'seller' : 'buyer';
+    }
+
     const safeUser = {
       id: user.id,
       email: user.email,
       full_name: user.full_name,
       role: user.role,
-      account_type: user.account_type || null,
+      account_type: accountType,
     };
 
     return NextResponse.json({

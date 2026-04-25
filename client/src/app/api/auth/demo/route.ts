@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     let { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('id, email, full_name, role, account_type')
+      .select('id, email, full_name, role')
       .eq('email', email)
       .maybeSingle();
 
@@ -32,8 +32,8 @@ export async function POST(request: NextRequest) {
       const password_hash = await bcrypt.hash('demo123', 12);
       const created = await supabaseAdmin
         .from('users')
-        .insert({ full_name: `Demo ${role.toUpperCase()}`, email, password_hash, role: mappedRole, account_type: accountType })
-        .select('id, email, full_name, role, account_type')
+        .insert({ full_name: `Demo ${role.toUpperCase()}`, email, password_hash, role: mappedRole })
+        .select('id, email, full_name, role')
         .single();
 
       if (created.error || !created.data) {
@@ -45,8 +45,18 @@ export async function POST(request: NextRequest) {
         await supabaseAdmin.from('seller_profiles').insert({ user_id: user.id });
       }
     }
+    let finalAccountType: 'buyer' | 'seller' | null = accountType;
+    if (mappedRole === 'client' && !finalAccountType) {
+      const { data: sellerProfile } = await supabaseAdmin
+        .from('seller_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      finalAccountType = sellerProfile ? 'seller' : 'buyer';
+    }
 
-    return NextResponse.json({ user, token: issueToken(user) });
+    const safeUser = { ...user, account_type: finalAccountType };
+    return NextResponse.json({ user: safeUser, token: issueToken(safeUser) });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation failed', details: error.issues }, { status: 422 });
