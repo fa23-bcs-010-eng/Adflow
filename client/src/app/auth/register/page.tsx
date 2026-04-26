@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { getErrorMessage } from '@/lib/errors';
-import { Zap } from 'lucide-react';
+import { ShieldCheck, Crown, BadgeDollarSign, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
@@ -41,6 +41,22 @@ export default function RegisterPage() {
           <p className="text-gray-500 text-sm mt-1">Join as a buyer or seller and unlock the right marketplace tools</p>
         </div>
         <div className="card p-8">
+          <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <p className="text-sm font-semibold text-white">Public registration</p>
+                <p className="text-xs text-slate-400 mt-1">Only buyer and seller accounts can be created here.</p>
+              </div>
+              <Link href="/auth/login" className="text-xs text-cyan-300 hover:text-cyan-200">
+                Staff login
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-xl border border-cyan-400/20 bg-cyan-500/10 px-3 py-2 text-cyan-100">Buyer: browse and purchase</div>
+              <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-3 py-2 text-emerald-100">Seller: post and sell</div>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="label">Account Type</label>
@@ -84,6 +100,30 @@ export default function RegisterPage() {
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
+
+          <div className="mt-8 border-t border-gray-800 pt-6">
+            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Staff roles are login-only</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {[
+                { label: 'Moderator', icon: ShieldCheck, href: '/auth/login', tone: 'text-cyan-300' },
+                { label: 'Admin', icon: BadgeDollarSign, href: '/auth/login', tone: 'text-amber-300' },
+                { label: 'Super Admin', icon: Crown, href: '/auth/login', tone: 'text-violet-300' },
+              ].map(({ label, icon: Icon, href, tone }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  className="rounded-xl border border-gray-700 bg-gray-900/60 p-3 text-sm hover:border-cyan-500 transition"
+                >
+                  <div className={`inline-flex items-center gap-2 font-semibold ${tone}`}>
+                    <Icon size={14} />
+                    {label}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Use demo or assigned staff credentials.</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+
           <p className="text-center text-sm text-gray-500 mt-6">
             Already have an account?{' '}
             <Link href="/auth/login" className="text-violet-400 hover:text-violet-300">Login</Link>

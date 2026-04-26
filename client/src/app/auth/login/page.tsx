@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { getErrorMessage } from '@/lib/errors';
-import { Zap } from 'lucide-react';
+import { BadgeDollarSign, Crown, ShieldCheck, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 type DemoRole = 'buyer' | 'seller' | 'moderator' | 'admin' | 'super_admin';
@@ -90,6 +90,25 @@ export default function LoginPage() {
         </div>
 
         <div className="card p-8">
+          <div className="mb-6 rounded-2xl border border-cyan-400/15 bg-cyan-500/5 p-4">
+            <p className="text-sm font-semibold text-white">Need staff access?</p>
+            <p className="text-xs text-slate-400 mt-1">Moderator, admin, and super admin are login-only roles. They do not register publicly.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
+              {[
+                { label: 'Moderator', icon: ShieldCheck, tone: 'text-cyan-300' },
+                { label: 'Admin', icon: BadgeDollarSign, tone: 'text-amber-300' },
+                { label: 'Super Admin', icon: Crown, tone: 'text-violet-300' },
+              ].map(({ label, icon: Icon, tone }) => (
+                <div key={label} className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                  <div className={`inline-flex items-center gap-2 text-xs font-semibold ${tone}`}>
+                    <Icon size={13} />
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="label">Email</label>
