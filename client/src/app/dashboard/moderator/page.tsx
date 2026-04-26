@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, XCircle, Eye, Clock3, LayoutGrid, Files, ShieldCheck, AlertTriangle, Flag, MessageSquare, BarChart3, Settings, Users } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, LayoutGrid, Files, ShieldCheck, AlertTriangle, Flag, MessageSquare, Settings } from 'lucide-react';
 import api from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { useAuth } from '@/lib/auth';
@@ -27,7 +27,7 @@ export default function ModeratorDashboard() {
   const [selected, setSelected] = useState<any>(null);
   const [note, setNote] = useState('');
   const [acting, setActing] = useState(false);
-  const [section, setSection] = useState<'pending' | 'flagged' | 'appeals' | 'performance' | 'history' | 'reports' | 'team' | 'settings'>('pending');
+  const [section, setSection] = useState<'pending' | 'flagged' | 'appeals' | 'reports' | 'settings'>('pending');
   const [ruleSettings, setRuleSettings] = useState({
     autoEscalate: true,
     reviewNotesRequired: true,
@@ -106,10 +106,7 @@ export default function ModeratorDashboard() {
     { key: 'pending', label: 'Pending Ads', icon: Files, count: queue.length },
     { key: 'flagged', label: 'Flagged Ads', icon: Flag, count: reviewStats.flagged },
     { key: 'appeals', label: 'Appeals', icon: MessageSquare, count: 0 },
-    { key: 'performance', label: 'Performance', icon: BarChart3 },
-    { key: 'history', label: 'History', icon: Clock3 },
     { key: 'reports', label: 'Reports', icon: Eye },
-    { key: 'team', label: 'Team Members', icon: Users },
     { key: 'settings', label: 'Rules & Settings', icon: Settings },
   ] as const;
 
@@ -123,7 +120,7 @@ export default function ModeratorDashboard() {
             <div className="mb-8">
               <div className="pill inline-flex items-center gap-2 mb-3"><ShieldCheck size={14} className="text-cyan-300" /> Moderation</div>
               <h2 className="text-xl font-black">Review Queue</h2>
-              <p className="text-sm text-slate-400 mt-2">Approve, reject, and annotate submitted ads.</p>
+              <p className="text-sm text-slate-400 mt-2">Moderate content, resolve complaints, and keep ads safe.</p>
             </div>
 
             <div className="space-y-2 text-sm">
@@ -293,31 +290,6 @@ export default function ModeratorDashboard() {
               </div>
             )}
 
-            {section === 'performance' && (
-              <div className="space-y-5">
-                <div>
-                  <h1 className="text-3xl font-black text-slate-900">Performance</h1>
-                  <p className="text-sm text-slate-600 mt-1">Review throughput and moderation workload.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {[['Reviewed today', Math.max(queue.length, 1)], ['Average note length', 'Short'], ['Escalation rate', 'Low'], ['Team SLA', 'On track']].map(([label, value]) => (<div key={label as string} className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-sm text-slate-500">{label}</p><p className="text-2xl font-black text-slate-900 mt-2">{value}</p></div>))}
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
-                  {[['Approval rate', 78], ['Rejection rate', 22], ['Escalated cases', 12]].map(([label, percent]) => (<div key={label as string}><div className="flex items-center justify-between text-sm mb-2"><span className="text-slate-600">{label}</span><span className="font-semibold text-slate-900">{percent}%</span></div><div className="h-2 rounded-full bg-slate-100 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500" style={{ width: `${percent}%` }} /></div></div>))}
-                </div>
-              </div>
-            )}
-
-            {section === 'history' && (
-              <div className="space-y-5">
-                <div>
-                  <h1 className="text-3xl font-black text-slate-900">History</h1>
-                  <p className="text-sm text-slate-600 mt-1">Recent moderation activity and decision logs.</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">{queue.slice(0, 3).map((ad) => (<div key={ad.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3"><div><p className="font-semibold text-slate-900">{ad.title}</p><p className="text-sm text-slate-500">{new Date(ad.created_at).toLocaleString()}</p></div><StatusBadge status={ad.status} /></div>))}</div>
-              </div>
-            )}
-
             {section === 'reports' && (
               <div className="space-y-5">
                 <div>
@@ -328,16 +300,6 @@ export default function ModeratorDashboard() {
                   <div className="rounded-2xl border border-slate-200 bg-white p-5"><h2 className="text-lg font-bold text-slate-900 mb-3">Weekly summary</h2><p className="text-sm text-slate-600">Pending reviews, approvals, and rejections can be exported once a reporting endpoint is connected.</p></div>
                   <div className="rounded-2xl border border-slate-200 bg-white p-5"><h2 className="text-lg font-bold text-slate-900 mb-3">Export format</h2><p className="text-sm text-slate-600">CSV, PDF, and email digests can be enabled here later without changing the layout.</p></div>
                 </div>
-              </div>
-            )}
-
-            {section === 'team' && (
-              <div className="space-y-5">
-                <div>
-                  <h1 className="text-3xl font-black text-slate-900">Team Members</h1>
-                  <p className="text-sm text-slate-600 mt-1">Moderator roles and access levels.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{[['Senior Moderator', 'Approves escalations and final decisions.'], ['Content Moderator', 'Handles daily queue reviews.'], ['Quality Lead', 'Audits notes and moderation consistency.']].map(([role, body]) => (<div key={role as string} className="rounded-2xl border border-slate-200 bg-white p-5"><p className="font-bold text-slate-900">{role}</p><p className="text-sm text-slate-600 mt-2 leading-6">{body}</p></div>))}</div>
               </div>
             )}
 

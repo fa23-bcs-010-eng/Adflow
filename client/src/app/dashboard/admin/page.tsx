@@ -97,8 +97,9 @@ export default function AdminDashboard() {
       <div className="panel-surface p-5 md:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
           <div>
-            <h1 className="text-2xl font-bold text-slate-100">Admin Control Panel</h1>
-            <p className="text-slate-300/70 text-sm">Revenue, submissions, approvals, and publishing controls.</p>
+            <div className="pill inline-flex items-center gap-2 mb-3"><BadgeDollarSign size={14} className="text-cyan-300" /> Admin Operations</div>
+            <h1 className="text-2xl font-bold text-slate-100">Operations Console</h1>
+            <p className="text-slate-300/70 text-sm">Payments, publishing, ad health, and fraud monitoring only.</p>
           </div>
           <div className="flex gap-2">
             <button onClick={() => handleCron('publish-scheduled')} className="btn-secondary text-xs inline-flex items-center gap-1">
@@ -337,9 +338,9 @@ export default function AdminDashboard() {
           <div className="card p-8 text-center">
             <div className="inline-flex items-center gap-2 mb-2 text-cyan-300">
               <Megaphone size={16} />
-              Publish Pipeline
+              Publishing Pipeline
             </div>
-            <p className="text-slate-300/75">Verify payment entries first. Payment-verified ads move into publishing queue automatically.</p>
+            <p className="text-slate-300/75">Verify payment entries first. Payment-verified ads move into the publishing queue automatically.</p>
             <p className="text-xs text-slate-300/55 mt-2">Endpoint available: /api/admin/ads/:id/publish</p>
           </div>
         )}

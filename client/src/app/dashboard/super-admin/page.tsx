@@ -6,18 +6,19 @@ import {
   ShieldCheck,
   Crown,
   Users,
-  Bell,
   BarChart3,
   Database,
   SlidersHorizontal,
-  ArrowRight,
   ShieldAlert,
   BadgeDollarSign,
   LayoutDashboard,
   Megaphone,
   MessagesSquare,
+  Gauge,
+  Lock,
+  Workflow,
+  AlertTriangle,
 } from 'lucide-react';
-import Link from 'next/link';
 import api from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 
@@ -52,7 +53,7 @@ export default function SuperAdminDashboard() {
     expired_ads: 0,
   });
   const [fraud, setFraud] = useState<any>({ summary: {}, risks: [], escrow: [], reports: [] });
-  const [tab, setTab] = useState<'overview' | 'system' | 'governance'>('overview');
+  const [tab, setTab] = useState<'overview' | 'policy' | 'systems' | 'emergency'>('overview');
 
   useEffect(() => {
     if (!authLoading && user && user.role !== 'super_admin') {
@@ -81,27 +82,30 @@ export default function SuperAdminDashboard() {
   return (
     <div className="panel-wrap">
       <div className="panel-surface p-5 md:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-          <div>
-            <div className="pill inline-flex items-center gap-2 mb-3"><Crown size={14} className="text-amber-300" /> Super Admin</div>
-            <h1 className="text-2xl font-bold text-slate-100">System Command Center</h1>
-            <p className="text-slate-300/70 text-sm">Global platform oversight, governance, and emergency controls.</p>
-          </div>
-          <div className="flex gap-2">
-            <Link href="/dashboard/admin" className="btn-secondary text-xs inline-flex items-center gap-1">
-              <ArrowRight size={12} /> Admin Panel
-            </Link>
-            <Link href="/dashboard/moderator" className="btn-secondary text-xs inline-flex items-center gap-1">
-              <MessagesSquare size={12} /> Moderator Queue
-            </Link>
+        <div className="rounded-[1.5rem] border border-amber-400/15 bg-gradient-to-r from-slate-950 via-slate-900 to-[#1a1230] p-5 md:p-6 mb-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="pill inline-flex items-center gap-2 mb-3"><Crown size={14} className="text-amber-300" /> Super Admin</div>
+              <h1 className="text-2xl md:text-3xl font-black text-slate-50">Governance Command Center</h1>
+              <p className="text-slate-300/75 text-sm mt-2 max-w-2xl">
+                Platform-wide policy, identity, system health, and escalation controls. This view is intentionally separate from day-to-day admin operations and moderation.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs text-slate-200">
+              <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 inline-flex items-center gap-2"><Gauge size={12} className="text-cyan-300" /> System health</div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 inline-flex items-center gap-2"><Lock size={12} className="text-amber-300" /> Policy locks</div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 inline-flex items-center gap-2"><Workflow size={12} className="text-emerald-300" /> Cross-role flow</div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 inline-flex items-center gap-2"><AlertTriangle size={12} className="text-red-300" /> Escalations</div>
+            </div>
           </div>
         </div>
 
         <div className="flex gap-2 mb-5">
           {[
             ['overview', 'Overview', LayoutDashboard],
-            ['system', 'System', Database],
-            ['governance', 'Governance', SlidersHorizontal],
+            ['policy', 'Policy', SlidersHorizontal],
+            ['systems', 'Systems', Database],
+            ['emergency', 'Emergency', ShieldAlert],
           ].map(([key, label, Icon]) => (
             <button
               key={String(key)}
@@ -164,10 +168,28 @@ export default function SuperAdminDashboard() {
                 </div>
               </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="card p-5">
+                <p className="text-xs text-slate-300/60 mb-1">Policy State</p>
+                <p className="text-2xl font-black text-white">Locked</p>
+                <p className="text-sm text-slate-400 mt-2">Super admin only. Change platform-wide rules from the policy tab.</p>
+              </div>
+              <div className="card p-5">
+                <p className="text-xs text-slate-300/60 mb-1">Identity Surface</p>
+                <p className="text-2xl font-black text-white">4 roles</p>
+                <p className="text-sm text-slate-400 mt-2">Buyer, seller, moderator, and admin operate under separated permission sets.</p>
+              </div>
+              <div className="card p-5">
+                <p className="text-xs text-slate-300/60 mb-1">Emergency Status</p>
+                <p className="text-2xl font-black text-amber-300">Standby</p>
+                <p className="text-sm text-slate-400 mt-2">Use only for fraud spikes, publish freezes, or account-wide intervention.</p>
+              </div>
+            </div>
           </div>
         )}
 
-        {tab === 'system' && (
+        {tab === 'policy' && (
           <div className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <StatCard label="Users" value={analytics.total_users || 0} />
@@ -179,7 +201,7 @@ export default function SuperAdminDashboard() {
               <div className="card p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Users size={16} className="text-cyan-300" />
-                  <h2 className="panel-title text-lg">Role Access</h2>
+                  <h2 className="panel-title text-lg">Role Access Policy</h2>
                 </div>
                 <div className="space-y-3 text-sm text-slate-300">
                   <p>Buyer: browse, chat, make offers, save searches, purchase.</p>
@@ -192,39 +214,84 @@ export default function SuperAdminDashboard() {
               <div className="card p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Megaphone size={16} className="text-amber-300" />
-                  <h2 className="panel-title text-lg">Cross-Team Links</h2>
+                  <h2 className="panel-title text-lg">Governance Notes</h2>
                 </div>
                 <div className="space-y-3">
-                  <Link href="/dashboard/admin" className="btn-secondary w-full inline-flex items-center justify-center gap-2">
-                    <BadgeDollarSign size={14} /> Open Admin
-                  </Link>
-                  <Link href="/dashboard/moderator" className="btn-secondary w-full inline-flex items-center justify-center gap-2">
-                    <ShieldCheck size={14} /> Open Moderator
-                  </Link>
-                  <Link href="/dashboard/client?tab=orders" className="btn-secondary w-full inline-flex items-center justify-center gap-2">
-                    <Users size={14} /> Review Buyer/Seller Flow
-                  </Link>
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-slate-300">
+                    Admin handles daily operations. Super admin only steps in when policy or platform integrity needs a global decision.
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-slate-300">
+                    If a team needs to be reviewed, use the respective dashboard through route-level access instead of mixing controls here.
+                  </div>
+                  <div className="rounded-xl border border-amber-400/15 bg-amber-400/5 p-3 text-sm text-slate-200 inline-flex items-center gap-2">
+                    <ShieldAlert size={14} className="text-amber-300" />
+                    Separate dashboards are intentional, not duplicate views.
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {tab === 'governance' && (
+        {tab === 'systems' && (
           <div className="space-y-5">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
               <div className="flex items-center gap-2 mb-3">
-                <ShieldCheck size={16} className="text-cyan-300" />
-                <h2 className="panel-title text-lg">Governance Controls</h2>
+                <Database size={16} className="text-cyan-300" />
+                <h2 className="panel-title text-lg">System Surface</h2>
               </div>
               <p className="text-sm text-slate-300/80 leading-6">
-                This screen is intentionally different from admin and moderator. Use it for platform-wide decisions, policy review, and route-level oversight rather than day-to-day queue work.
+                This screen is intentionally different from admin and moderator. Use it for platform health, platform-wide metrics, and operational sanity checks rather than queue work.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <StatCard label="Notifications" value={analytics.total_notifications || 0} />
               <StatCard label="Seller Reviews" value={analytics.total_reviews || 0} />
               <StatCard label="Open Reports" value={fraud.summary?.open_reports || 0} />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="card p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <BadgeDollarSign size={16} className="text-cyan-300" />
+                  <h2 className="panel-title text-lg">System Revenue Snapshot</h2>
+                </div>
+                <div className="space-y-3 text-sm text-slate-300">
+                  <p>Total ads: {adsSummary.total_ads || 0}</p>
+                  <p>Live ads: {adsSummary.live_ads || 0}</p>
+                  <p>Pending review: {adsSummary.pending_review_ads || 0}</p>
+                  <p>Expired ads: {adsSummary.expired_ads || 0}</p>
+                </div>
+              </div>
+              <div className="card p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <ShieldCheck size={16} className="text-emerald-300" />
+                  <h2 className="panel-title text-lg">Control Boundary</h2>
+                </div>
+                <div className="space-y-3 text-sm text-slate-300">
+                  <p>Admin handles payments and publishing.</p>
+                  <p>Moderator handles content review and reports.</p>
+                  <p>Super admin handles identity, policy, and emergency controls.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === 'emergency' && (
+          <div className="space-y-5">
+            <div className="rounded-2xl border border-red-400/20 bg-red-400/5 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle size={16} className="text-red-300" />
+                <h2 className="panel-title text-lg">Emergency Controls</h2>
+              </div>
+              <p className="text-sm text-slate-300/80 leading-6">
+                This area is only for platform-wide lockdown, temporary publish freezes, or fraud containment. It does not duplicate moderation or payment operations.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="card p-5"><p className="text-xs text-slate-400 mb-1">Publish state</p><p className="text-2xl font-black text-white">Normal</p></div>
+              <div className="card p-5"><p className="text-xs text-slate-400 mb-1">Escalation queue</p><p className="text-2xl font-black text-amber-300">{fraud.summary?.open_reports || 0}</p></div>
+              <div className="card p-5"><p className="text-xs text-slate-400 mb-1">Lockdown readiness</p><p className="text-2xl font-black text-emerald-300">Ready</p></div>
             </div>
           </div>
         )}
