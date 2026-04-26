@@ -604,7 +604,11 @@ This project is licensed under the **MIT License**.
 
 **Hammad Raheel Sarwar**
 
+<<<<<<< HEAD
 *Full-Stack Developer & Software Engineering Student (Semester 6)*
+=======
+*Full-Stack Developer & Computer Science Student (Semester 6)*
+>>>>>>> 8418c62ff6a888239b2659d16490a62e3cacd0b2
 
 [![GitHub](https://img.shields.io/badge/GitHub-fa23--bcs--010--eng-181717?style=flat-square&logo=github)](https://github.com/fa23-bcs-010-eng)
 
