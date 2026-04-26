@@ -20,7 +20,11 @@ export default function RegisterPage() {
     try {
       await register(form);
       toast.success('Account created! Welcome to AdFlow Pro.');
-      router.push(form.role === 'client' ? '/dashboard/client' : `/dashboard/${form.role === 'super_admin' ? 'admin' : form.role}`);
+      router.push(
+        form.role === 'client'
+          ? '/dashboard/client'
+          : `/dashboard/${form.role === 'super_admin' ? 'super-admin' : form.role}`
+      );
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, 'Registration failed'));
     } finally { setLoading(false); }

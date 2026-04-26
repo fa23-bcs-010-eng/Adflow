@@ -17,7 +17,7 @@ const roleDashboard: Record<DemoRole, string> = {
   seller: '/dashboard/client',
   moderator: '/dashboard/moderator',
   admin: '/dashboard/admin',
-  super_admin: '/dashboard/admin',
+  super_admin: '/dashboard/super-admin',
 };
 
 const roleDemoEmail: Record<DemoRole, string> = {

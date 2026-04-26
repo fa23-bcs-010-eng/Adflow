@@ -35,6 +35,7 @@ export default function AdminDashboard() {
   const analyticsData = analytics || {};
 
   useEffect(() => {
+    if (!authLoading && user && user.role === 'super_admin') router.push('/dashboard/super-admin');
     if (!authLoading && user && !['admin', 'super_admin'].includes(user.role)) router.push('/');
   }, [user, authLoading, router]);
 
