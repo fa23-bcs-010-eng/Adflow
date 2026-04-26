@@ -187,7 +187,7 @@ export default function ModeratorDashboard() {
                             <button onClick={() => setSelected(ad)} className="text-left flex-1">
                               <div className="text-sm font-bold text-slate-900">#{ad.id?.slice?.(0, 6) || ad.id}</div>
                               <div className="mt-1 font-semibold text-slate-800">{ad.title}</div>
-                              <div className="text-xs text-slate-500 mt-2 inline-flex items-center gap-2 flex-wrap"><StatusBadge status={ad.status} /><span>{ad.user?.full_name}</span><span className="inline-flex items-center gap-1"><Clock3 size={12} /> {new Date(ad.created_at).toLocaleString()}</span></div>
+                              <div className="text-xs text-slate-500 mt-2 inline-flex items-center gap-2 flex-wrap"><StatusBadge status={ad.status} /><span>{ad.user?.full_name}</span><span className="inline-flex items-center gap-1">⏱ {new Date(ad.created_at).toLocaleString()}</span></div>
                             </button>
                             <div className="flex gap-2 flex-wrap">
                               <button onClick={() => setSelected(ad)} className="btn-secondary text-xs inline-flex items-center gap-1"><Eye size={12} /> Review</button>
