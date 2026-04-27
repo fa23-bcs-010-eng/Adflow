@@ -604,7 +604,7 @@ This project is licensed under the **MIT License**.
 
 **Hammad Raheel Sarwar**
 
-<<<<<<< HEAD
+ 
 *Full-Stack Developer & Software Engineering Student (Semester 6)*
 =======
 *Full-Stack Developer & Computer Science Student (Semester 6)*
